@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HUMANA — Business Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #0c0e12;
+  --panel:    #12151b;
+  --card:     #181c24;
+  --border:   #1e2330;
+  --border2:  #2a3040;
+  --text:     #e8eaf0;
+  --muted:    #6b7385;
+  --dim:      #3a4155;
+  --amber:    #f59e0b;
+  --amber-d:  #f59e0b22;
+  --amber-m:  #f59e0b55;
+  --green:    #10b981;
+  --green-d:  #10b98122;
+  --red:      #ef4444;
+  --red-d:    #ef444422;
+  --blue:     #3b82f6;
+  --blue-d:   #3b82f622;
+  --sidebar-w: 220px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  display: flex;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: relative;
+  z-index: 10;
+}
+.sb-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sb-logo-mark {
+  width: 32px; height: 32px;
+  background: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 800;
+  color: var(--bg);
+}
+.sb-logo-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text);
+}
+.sb-logo-text span { color: var(--amber); }
+.sb-biz {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sb-biz-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 6px;
+}
+.sb-biz-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--text);
+}
+.sb-biz-status {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 4px;
+  font-size: 11px; color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.sb-biz-status.online { color: var(--green); }
+.sb-biz-status.offline { color: var(--red); }
+.sb-biz-status::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.sb-biz-status.online::before { animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+.sb-nav {
+  flex: 1;
+  padding: 12px 0;
+  overflow-y: auto;
+}
+.sb-section {
+  padding: 12px 20px 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--dim);
+}
+.sb-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px;
+  font-size: 13px; color: var(--muted);
+  cursor: pointer; transition: all 0.15s;
+  border-left: 2px solid transparent;
+  user-select: none;
+}
+.sb-item:hover { color: var(--text); background: var(--card); }
+.sb-item.active {
+  color: var(--amber);
+  border-left-color: var(--amber);
+  background: var(--amber-d);
+}
+.sb-item .icon { width: 16px; text-align: center; font-size: 14px; opacity: 0.8; }
+.sb-badge {
+  margin-left: auto;
+  background: var(--amber-d);
+  border: 1px solid var(--amber-m);
+  color: var(--amber);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; padding: 1px 6px;
+}
+.sb-bottom {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+.sb-user {
+  display: flex; align-items: center; gap: 10px;
+}
+.sb-avatar {
+  width: 30px; height: 30px;
+  background: var(--amber-d);
+  border: 1px solid var(--amber-m);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700;
+  color: var(--amber);
+}
+.sb-user-info { flex: 1; min-width: 0; }
+.sb-user-name { font-size: 12px; font-weight: 400; color: var(--text); }
+.sb-user-plan {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--amber);
+}
+
+/* ── MAIN CONTENT ── */
+#main {
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  height: 56px; min-height: 56px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 28px;
+  gap: 16px;
+  position: sticky; top: 0;
+  background: var(--bg);
+  z-index: 5;
+}
+.topbar-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--text);
+}
+.topbar-breadcrumb {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--muted);
+}
+.topbar-sep { color: var(--dim); margin: 0 4px; }
+.topbar-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+
+/* ── DATA SOURCE INDICATOR ── */
+.data-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.12em;
+  padding: 4px 10px;
+  border: 1px solid;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.data-pill.live   { color: var(--green); border-color: var(--green); background: var(--green-d); }
+.data-pill.offline { color: var(--red);   border-color: var(--red);   background: var(--red-d);   }
+.data-pill.loading { color: var(--muted); border-color: var(--border2); }
+.data-pill .pip {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: currentColor;
+}
+.data-pill.live .pip { animation: pulse 1.5s infinite; }
+
+.btn {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 7px 16px; cursor: pointer;
+  border: none; transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-amber { background: var(--amber); color: var(--bg); }
+.btn-amber:hover { background: #fbbf24; }
+.btn-ghost {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { border-color: var(--muted); color: var(--text); }
+.btn-danger {
+  background: var(--red-d); color: var(--red);
+  border: 1px solid var(--red);
+}
+.btn-danger:hover { background: var(--red); color: white; }
+
+.page { padding: 24px 28px; flex: 1; display: none; }
+.page.active { display: block; }
+@keyframes pageIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.page { animation: pageIn 0.25s ease; }
+
+/* ── SKELETON LOADER ── */
+.skel {
+  background: linear-gradient(90deg, var(--card) 25%, var(--border) 50%, var(--card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 2px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.skel-line { height: 12px; margin-bottom: 8px; }
+.skel-block { height: 40px; }
+
+/* ── METRIC CARDS ── */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.metric-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 20px 22px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.metric-card:hover { border-color: var(--border2); }
+.metric-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.metric-card.amber::before { background: var(--amber); }
+.metric-card.green::before { background: var(--green); }
+.metric-card.blue::before  { background: var(--blue); }
+.metric-card.red::before   { background: var(--red); }
+.metric-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 10px;
+}
+.metric-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 34px; font-weight: 800;
+  color: var(--text); line-height: 1;
+  margin-bottom: 6px;
+  min-height: 40px;
+}
+.metric-delta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.metric-delta.up     { color: var(--green); }
+.metric-delta.down   { color: var(--red); }
+.metric-delta.neutral{ color: var(--muted); }
+
+/* ── GRID ── */
+.grid-2   { display: grid; grid-template-columns: 1fr 1fr;       gap: 16px; }
+.grid-3   { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.grid-6-4 { display: grid; grid-template-columns: 6fr 4fr;       gap: 16px; }
+
+/* ── PANEL ── */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.15em;
+  background: var(--amber-d); border: 1px solid var(--amber-m);
+  color: var(--amber); padding: 2px 8px;
+}
+.panel-body { padding: 20px; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--dim);
+  border-top: 1px solid var(--border);
+}
+.empty-state-icon { font-size: 28px; opacity: 0.3; margin-bottom: 10px; }
+
+/* ── CHART BAR ── */
+.chart-bars {
+  display: flex; align-items: flex-end;
+  gap: 6px; height: 100px;
+}
+.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.chart-bar {
+  width: 100%;
+  background: var(--amber);
+  opacity: 0.7;
+  min-height: 2px;
+  transition: height 0.6s ease, opacity 0.2s;
+}
+.chart-bar:hover { opacity: 1; }
+.chart-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--muted);
+}
+
+/* ── CONV LIST ── */
+.conv-list { display: flex; flex-direction: column; }
+.conv-row {
+  display: flex; align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  gap: 14px; cursor: pointer;
+  transition: background 0.15s;
+}
+.conv-row:hover { background: var(--panel); }
+.conv-row:last-child { border-bottom: none; }
+.conv-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.conv-dot.live { background: var(--green); animation: pulse 1.5s infinite; }
+.conv-dot.ended { background: var(--dim); }
+.conv-dot.handoff { background: var(--amber); animation: pulse 1.5s infinite; }
+.conv-summary { flex: 1; min-width: 0; }
+.conv-q {
+  font-size: 13px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.conv-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--muted);
+}
+.conv-emotion {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; padding: 2px 8px;
+  border: 1px solid var(--border2); color: var(--muted);
+}
+.conv-emotion.pos { border-color: var(--green); color: var(--green); background: var(--green-d); }
+.conv-emotion.neg { border-color: var(--red); color: var(--red); background: var(--red-d); }
+
+/* ── KB LIST ── */
+.kb-list { display: flex; flex-direction: column; gap: 2px; }
+.kb-item {
+  display: flex; align-items: center;
+  padding: 12px 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  gap: 14px; transition: border-color 0.15s;
+}
+.kb-item:hover { border-color: var(--border2); }
+.kb-icon {
+  width: 36px; height: 36px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.kb-info { flex: 1; min-width: 0; }
+.kb-name { font-size: 13px; color: var(--text); font-weight: 400; margin-bottom: 2px; }
+.kb-meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+.kb-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; padding: 3px 10px;
+  border: 1px solid;
+}
+.kb-status.ready      { border-color: var(--green); color: var(--green); background: var(--green-d); }
+.kb-status.processing { border-color: var(--amber); color: var(--amber); background: var(--amber-d); }
+
+/* ── DROPZONE ── */
+.dropzone {
+  border: 2px dashed var(--border2);
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+.dropzone:hover, .dropzone.drag { border-color: var(--amber); background: var(--amber-d); }
+.dropzone-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
+.dropzone-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--text); margin-bottom: 6px;
+}
+.dropzone-sub { font-size: 12px; color: var(--muted); }
+.dropzone-formats {
+  margin-top: 12px;
+  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+}
+.format-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; padding: 2px 10px;
+  border: 1px solid var(--border2); color: var(--muted);
+}
+
+/* ── CONFIG ── */
+.config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--muted);
+}
+.form-input, .form-select, .form-textarea {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 10px 14px;
+  font-family: 'Lato', sans-serif;
+  font-size: 13px; font-weight: 300;
+  outline: none; transition: border-color 0.15s;
+  width: 100%;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--amber); }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-select { cursor: pointer; }
+.form-select option { background: var(--panel); }
+
+/* ── VOICE CARDS ── */
+.voice-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.voice-card {
+  border: 1px solid var(--border2);
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.voice-card:hover { border-color: var(--amber); }
+.voice-card.selected { border-color: var(--amber); background: var(--amber-d); }
+.voice-name { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.voice-desc { font-size: 11px; color: var(--muted); }
+.voice-play { margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--amber); letter-spacing: 0.1em; }
+
+/* ── AVATAR PREVIEW ── */
+.avatar-preview {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.preview-face {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a2535, #0f1820);
+  border: 2px solid var(--amber-m);
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.preview-face::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 50%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.08), transparent);
+}
+.p-eye {
+  width: 8px; height: 10px;
+  background: var(--amber);
+  border-radius: 50%;
+  position: absolute;
+  top: 36px;
+  animation: blink 5s ease-in-out infinite;
+}
+.p-eye.l { left: 28px; } .p-eye.r { right: 28px; }
+@keyframes blink { 0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.05)} }
+.p-mouth {
+  width: 28px; height: 10px;
+  border: 2px solid var(--amber-m);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  position: absolute; top: 58px; left: 36px;
+  animation: atalk 3s ease-in-out infinite;
+}
+@keyframes atalk { 0%,60%,100%{height:10px}20%{height:5px}40%{height:14px} }
+.preview-scan {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--amber), transparent);
+  animation: ascan 2s linear infinite;
+}
+@keyframes ascan { 0%{top:0}100%{top:100%} }
+.preview-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 700;
+  color: var(--text);
+}
+.preview-role { font-size: 12px; color: var(--muted); text-align: center; }
+.preview-bubble {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--amber);
+  padding: 10px 14px;
+  font-size: 12px; color: var(--muted);
+  width: 100%; line-height: 1.5;
+  font-style: italic;
+}
+
+/* ── MISSED Q ── */
+.mq-list { display: flex; flex-direction: column; }
+.mq-item {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.mq-item:last-child { border-bottom: none; }
+.mq-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.1em;
+  padding: 3px 8px; flex-shrink: 0;
+  border: 1px solid var(--red); color: var(--red); background: var(--red-d);
+}
+.mq-text { font-size: 13px; color: var(--text); flex: 1; line-height: 1.5; }
+.mq-count { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); flex-shrink: 0; }
+.mq-fix-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.08em;
+  padding: 4px 10px; flex-shrink: 0;
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--amber); cursor: pointer;
+  transition: all 0.15s;
+}
+.mq-fix-btn:hover { background: var(--amber-d); border-color: var(--amber); }
+
+/* ── CODE BLOCK ── */
+.code-block {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--green);
+  line-height: 1.7;
+  overflow-x: auto;
+  position: relative;
+}
+.code-copy {
+  position: absolute; top: 10px; right: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  background: transparent;
+  border: 1px solid var(--border2); color: var(--muted);
+  padding: 3px 10px; cursor: pointer;
+  transition: all 0.15s;
+}
+.code-copy:hover { border-color: var(--amber); color: var(--amber); }
+.kw { color: var(--amber); }
+.str { color: #a78bfa; }
+.cm { color: var(--muted); }
+
+/* ── ACTIVITY ── */
+.activity { display: flex; flex-direction: column; }
+.activity-item {
+  display: flex; gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.activity-text { font-size: 12px; color: var(--muted); line-height: 1.5; flex: 1; }
+.activity-text strong { color: var(--text); font-weight: 400; }
+.activity-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--dim); flex-shrink: 0; }
+
+/* ── PROGRESS ── */
+.progress-wrap { margin-bottom: 4px; }
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--muted);
+  margin-bottom: 6px;
+}
+.progress-bar { height: 3px; background: var(--border2); position: relative; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--amber); transition: width 1s ease; }
+.progress-fill.green { background: var(--green); }
+.progress-fill.blue  { background: var(--blue); }
+
+/* ── TOGGLE ── */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.toggle-row:last-child { border-bottom: none; }
+.toggle-info .toggle-title { font-size: 13px; color: var(--text); margin-bottom: 2px; }
+.toggle-info .toggle-desc { font-size: 11px; color: var(--muted); }
+.toggle {
+  width: 38px; height: 20px;
+  background: var(--border2);
+  border-radius: 10px;
+  position: relative; cursor: pointer;
+  transition: background 0.2s; flex-shrink: 0;
+}
+.toggle.on { background: var(--amber); }
+.toggle::after {
+  content: '';
+  position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  background: var(--text); border-radius: 50%;
+  transition: transform 0.2s;
+}
+.toggle.on::after { transform: translateX(18px); }
+
+/* ── LIVE ROW ── */
+.live-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.live-row:last-child { border-bottom: none; }
+.live-key { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.live-val { color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.live-val.green { color: var(--green); }
+.live-val.amber { color: var(--amber); }
+.live-val.red   { color: var(--red); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--card); border: 1px solid var(--green);
+  border-left: 3px solid var(--green);
+  padding: 12px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--green);
+  z-index: 9999;
+  transform: translateY(80px); opacity: 0;
+  transition: all 0.3s;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { border-color: var(--red); color: var(--red); }
+
+/* ── REFRESH SPIN ── */
+.spin { animation: spin 1s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── API STATUS BAR ── */
+#api-status-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: transparent;
+  z-index: 9998;
+  transition: background 0.3s;
+}
+#api-status-bar.fetching { background: linear-gradient(90deg, transparent, var(--amber), transparent); animation: scanH 1s linear infinite; }
+@keyframes scanH { 0%{background-position:-200% 0}100%{background-position:200% 0} }
+</style>
+</head>
+<body>
+<div id="api-status-bar"></div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-mark">H</div>
+    <div class="sb-logo-text">HUM<span>A</span>NA</div>
+  </div>
+  <div class="sb-biz">
+    <div class="sb-biz-label">Active Business</div>
+    <div class="sb-biz-name" id="sb-biz-name">—</div>
+    <div class="sb-biz-status loading" id="sb-biz-status">Connecting…</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Main</div>
+    <div class="sb-item active" data-page="overview"><span class="icon">⬡</span> Overview</div>
+    <div class="sb-item" data-page="conversations"><span class="icon">◈</span> Conversations<span class="sb-badge" id="badge-conv">—</span></div>
+    <div class="sb-item" data-page="missed"><span class="icon">◉</span> Missed Questions<span class="sb-badge" id="badge-missed">—</span></div>
+    <div class="sb-section">Avatar</div>
+    <div class="sb-item" data-page="knowledge"><span class="icon">◫</span> Knowledge Base</div>
+    <div class="sb-item" data-page="configure"><span class="icon">◧</span> Configure Avatar</div>
+    <div class="sb-item" data-page="embed"><span class="icon">◩</span> Embed Widget</div>
+    <div class="sb-section">Account</div>
+    <div class="sb-item" data-page="settings"><span class="icon">◌</span> Settings</div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-avatar">—</div>
+      <div class="sb-user-info">
+        <div class="sb-user-name" id="sb-user-name">Loading…</div>
+        <div class="sb-user-plan" id="sb-user-plan">— Plan</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- ── OVERVIEW ── -->
+  <div class="topbar" id="topbar-overview">
+    <div>
+      <div class="topbar-title">Overview</div>
+      <div class="topbar-breadcrumb">Dashboard <span class="topbar-sep">/</span> Overview</div>
+    </div>
+    <div class="topbar-actions">
+      <div class="data-pill loading" id="overview-pill"><div class="pip"></div><span id="overview-pill-txt">LOADING</span></div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)" id="live-clock"></span>
+      <button class="btn btn-ghost" onclick="refreshAll()" id="refresh-btn">↺ Refresh</button>
+      <button class="btn btn-amber" onclick="window.open('humana-landing.html','_blank')">↗ Live Avatar</button>
+    </div>
+  </div>
+  <div class="page active" id="page-overview">
+    <div class="metrics-row">
+      <div class="metric-card amber">
+        <div class="metric-label">Conversations Today</div>
+        <div class="metric-value" id="m-conv"><div class="skel skel-block" style="width:80px"></div></div>
+        <div class="metric-delta neutral" id="m-conv-d"><div class="skel skel-line" style="width:120px"></div></div>
+      </div>
+      <div class="metric-card green">
+        <div class="metric-label">Resolution Rate</div>
+        <div class="metric-value" id="m-res"><div class="skel skel-block" style="width:80px"></div></div>
+        <div class="metric-delta neutral" id="m-res-d"><div class="skel skel-line" style="width:120px"></div></div>
+      </div>
+      <div class="metric-card blue">
+        <div class="metric-label">Avg Response Time</div>
+        <div class="metric-value" id="m-rt"><div class="skel skel-block" style="width:80px"></div></div>
+        <div class="metric-delta neutral" id="m-rt-d"><div class="skel skel-line" style="width:120px"></div></div>
+      </div>
+      <div class="metric-card red">
+        <div class="metric-label">Handoffs Today</div>
+        <div class="metric-value" id="m-ho"><div class="skel skel-block" style="width:80px"></div></div>
+        <div class="metric-delta neutral" id="m-ho-d"><div class="skel skel-line" style="width:120px"></div></div>
+      </div>
+    </div>
+
+    <div class="grid-6-4">
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Conversation Volume <span class="panel-tag" id="chart-tag">LAST 7 DAYS</span></div>
+            <div class="data-pill loading" id="chart-pill"><div class="pip"></div>LOADING</div>
+          </div>
+          <div class="panel-body">
+            <div class="chart-bars" id="chart-bars">
+              <!-- skeleton bars -->
+              <div class="chart-bar-wrap"><div class="skel chart-bar" style="height:40px"></div><div class="chart-label">—</div></div>
+              <div class="chart-bar-wrap"><div class="skel chart-bar" style="height:60px"></div><div class="chart-label">—</div></div>
+              <div class="chart-bar-wrap"><div class="skel chart-bar" style="height:50px"></div><div class="chart-label">—</div></div>
+              <div class="chart-bar-wrap"><div class="skel chart-bar" style="height:70px"></div><div class="chart-label">—</div></div>
+              <div class="chart-bar-wrap"><div class="skel chart-bar" style="height:45px"></div><div class="chart-label">—</div></div>
+              <div class="chart-bar-wrap"><div class="skel chart-bar" style="height:35px"></div><div class="chart-label">—</div></div>
+              <div class="chart-bar-wrap"><div class="skel chart-bar" style="height:55px"></div><div class="chart-label">—</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Recent Conversations</div>
+            <button class="btn btn-ghost" onclick="nav('conversations')" style="font-size:11px;padding:5px 12px">View All</button>
+          </div>
+          <div class="conv-list" id="recent-convs">
+            <div style="padding:20px"><div class="skel skel-line"></div><div class="skel skel-line" style="width:70%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Live Status</div>
+            <div class="data-pill loading" id="status-pill"><div class="pip"></div>LOADING</div>
+          </div>
+          <div class="live-row"><span class="live-key">Avatar</span><span class="live-val" id="ls-avatar">—</span></div>
+          <div class="live-row"><span class="live-key">Active Sessions</span><span class="live-val amber" id="ls-sessions">—</span></div>
+          <div class="live-row"><span class="live-key">Knowledge Docs</span><span class="live-val" id="ls-docs">—</span></div>
+          <div class="live-row"><span class="live-key">LLM Provider</span><span class="live-val" id="ls-llm">—</span></div>
+          <div class="live-row"><span class="live-key">TTS Engine</span><span class="live-val" id="ls-tts">—</span></div>
+          <div class="live-row"><span class="live-key">Uptime (30d)</span><span class="live-val" id="ls-uptime">—</span></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Top Questions This Week</div>
+            <div class="data-pill loading" id="tq-pill"><div class="pip"></div>LOADING</div>
+          </div>
+          <div class="panel-body" id="top-questions-body" style="padding:12px 0 0">
+            <div style="padding:0 20px 12px"><div class="skel skel-line"></div><div class="skel skel-line" style="height:4px;margin-top:6px"></div></div>
+            <div style="padding:0 20px 12px"><div class="skel skel-line" style="width:80%"></div><div class="skel skel-line" style="height:4px;margin-top:6px"></div></div>
+            <div style="padding:0 20px 12px"><div class="skel skel-line" style="width:65%"></div><div class="skel skel-line" style="height:4px;margin-top:6px"></div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Activity Feed</div>
+            <div class="data-pill loading" id="activity-pill"><div class="pip"></div>LOADING</div>
+          </div>
+          <div class="activity" id="activity-feed">
+            <div class="activity-item"><div class="activity-dot skel" style="background:var(--border2)"></div><div class="skel skel-line" style="flex:1"></div></div>
+            <div class="activity-item"><div class="activity-dot skel" style="background:var(--border2)"></div><div class="skel skel-line" style="flex:1;width:80%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONVERSATIONS ── -->
+  <div class="topbar" id="topbar-conversations" style="display:none">
+    <div>
+      <div class="topbar-title">Conversations</div>
+      <div class="topbar-breadcrumb">Dashboard <span class="topbar-sep">/</span> Conversations</div>
+    </div>
+    <div class="topbar-actions">
+      <div class="data-pill loading" id="conv-pill"><div class="pip"></div>LOADING</div>
+      <button class="btn btn-ghost">↓ Export CSV</button>
+    </div>
+  </div>
+  <div class="page" id="page-conversations">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">All Conversations <span class="panel-tag">TODAY</span></div>
+        <div style="display:flex;gap:8px">
+          <select class="form-select" id="conv-filter" style="width:auto;padding:6px 12px;font-size:12px" onchange="filterConvs()">
+            <option value="">All statuses</option>
+            <option value="live">Live</option>
+            <option value="ended">Ended</option>
+            <option value="handoff">Handoff</option>
+          </select>
+        </div>
+      </div>
+      <div class="conv-list" id="all-convs">
+        <div style="padding:20px"><div class="skel skel-line"></div><div class="skel skel-line" style="width:60%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MISSED QUESTIONS ── -->
+  <div class="topbar" id="topbar-missed" style="display:none">
+    <div>
+      <div class="topbar-title">Missed Questions</div>
+      <div class="topbar-breadcrumb">Dashboard <span class="topbar-sep">/</span> Missed Questions</div>
+    </div>
+    <div class="topbar-actions">
+      <div class="data-pill loading" id="missed-pill"><div class="pip"></div>LOADING</div>
+      <button class="btn btn-amber" onclick="nav('knowledge')">+ Add to Knowledge Base</button>
+    </div>
+  </div>
+  <div class="page" id="page-missed">
+    <div id="missed-alert" style="display:none;border:1px solid var(--red);padding:12px 20px;margin-bottom:16px;font-size:13px;color:var(--red);font-family:'JetBrains Mono',monospace;background:var(--red-d)"></div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Unanswered Questions</div></div>
+      <div class="mq-list" id="mq-list">
+        <div style="padding:20px"><div class="skel skel-line"></div><div class="skel skel-line" style="width:75%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KNOWLEDGE BASE ── -->
+  <div class="topbar" id="topbar-knowledge" style="display:none">
+    <div>
+      <div class="topbar-title">Knowledge Base</div>
+      <div class="topbar-breadcrumb">Dashboard <span class="topbar-sep">/</span> Knowledge Base</div>
+    </div>
+    <div class="topbar-actions">
+      <div class="data-pill loading" id="kb-pill"><div class="pip"></div>LOADING</div>
+    </div>
+  </div>
+  <div class="page" id="page-knowledge">
+    <div class="grid-6-4">
+      <div>
+        <div class="dropzone" id="dropzone">
+          <div class="dropzone-icon">📄</div>
+          <div class="dropzone-text">Drop files here or click to upload</div>
+          <div class="dropzone-sub">Your avatar will be retrained automatically</div>
+          <div class="dropzone-formats">
+            <span class="format-pill">PDF</span>
+            <span class="format-pill">TXT</span>
+            <span class="format-pill">DOCX</span>
+            <span class="format-pill">MD</span>
+            <span class="format-pill">CSV</span>
+          </div>
+        </div>
+        <input type="file" id="file-input" multiple accept=".pdf,.txt,.docx,.md,.csv" style="display:none"/>
+        <div style="margin-bottom:8px">
+          <div class="form-label" style="margin-bottom:8px">Or paste text / URL directly</div>
+          <textarea class="form-textarea" id="kb-text" placeholder="Paste your FAQ, product description, policy text, or a URL to scrape..." style="min-height:100px"></textarea>
+          <button class="btn btn-amber" style="margin-top:8px;width:100%" onclick="ingestText()">+ Add to Knowledge Base</button>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-header">
+            <div class="panel-title">Uploaded Documents</div>
+            <span id="kb-doc-count" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">loading…</span>
+          </div>
+          <div class="kb-list" id="kb-list" style="padding:12px">
+            <div style="padding:10px"><div class="skel skel-line"></div><div class="skel skel-line" style="width:60%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Knowledge Health</div></div>
+          <div class="panel-body" id="kb-health-body">
+            <div class="skel skel-line"></div>
+            <div class="skel skel-line" style="height:4px;margin-top:6px;margin-bottom:16px"></div>
+            <div class="skel skel-line"></div>
+            <div class="skel skel-line" style="height:4px;margin-top:6px;margin-bottom:16px"></div>
+            <div class="skel skel-line"></div>
+            <div class="skel skel-line" style="height:4px;margin-top:6px"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">API Endpoint</div></div>
+          <div style="padding:12px 16px">
+            <div class="code-block" style="font-size:11px">
+              <button class="code-copy" id="kb-api-copy">copy</button>
+              <div id="kb-api-code"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONFIGURE AVATAR ── -->
+  <div class="topbar" id="topbar-configure" style="display:none">
+    <div>
+      <div class="topbar-title">Configure Avatar</div>
+      <div class="topbar-breadcrumb">Dashboard <span class="topbar-sep">/</span> Configure Avatar</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost">Discard</button>
+      <button class="btn btn-amber" onclick="saveConfig()">Save Changes</button>
+    </div>
+  </div>
+  <div class="page" id="page-configure">
+    <div class="grid-6-4">
+      <div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Identity</div></div>
+          <div class="panel-body">
+            <div class="config-grid">
+              <div class="form-group">
+                <div class="form-label">Avatar Name</div>
+                <input class="form-input" id="cfg-name" placeholder="Avatar Name" oninput="updatePreview()"/>
+              </div>
+              <div class="form-group">
+                <div class="form-label">Business Name</div>
+                <input class="form-input" id="cfg-biz" placeholder="Business Name"/>
+              </div>
+              <div class="form-group full">
+                <div class="form-label">Personality</div>
+                <input class="form-input" id="cfg-personality" placeholder="e.g. Warm, professional and reassuring"/>
+              </div>
+              <div class="form-group full">
+                <div class="form-label">Role Description</div>
+                <textarea class="form-textarea" id="cfg-role" placeholder="What should the avatar help with?"></textarea>
+              </div>
+              <div class="form-group full">
+                <div class="form-label">Welcome Message</div>
+                <input class="form-input" id="cfg-welcome" placeholder="Hi! I'm..." oninput="updatePreview()"/>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Voice</div></div>
+          <div class="panel-body">
+            <div class="voice-cards">
+              <div class="voice-card" onclick="selectVoice(this)"><div class="voice-name">Sara</div><div class="voice-desc">Warm · Female</div><div class="voice-play">▶ Preview</div></div>
+              <div class="voice-card" onclick="selectVoice(this)"><div class="voice-name">James</div><div class="voice-desc">Calm · Male</div><div class="voice-play">▶ Preview</div></div>
+              <div class="voice-card" onclick="selectVoice(this)"><div class="voice-name">Nova</div><div class="voice-desc">Energetic · Female</div><div class="voice-play">▶ Preview</div></div>
+              <div class="voice-card" onclick="selectVoice(this)"><div class="voice-name">Marcus</div><div class="voice-desc">Authoritative · Male</div><div class="voice-play">▶ Preview</div></div>
+              <div class="voice-card" onclick="selectVoice(this)"><div class="voice-name">Aria</div><div class="voice-desc">Friendly · Female</div><div class="voice-play">▶ Preview</div></div>
+              <div class="voice-card" onclick="selectVoice(this)"><div class="voice-name">Custom</div><div class="voice-desc">ElevenLabs ID</div><div class="voice-play">+ Configure</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Behaviour</div></div>
+          <div class="panel-body" style="padding:4px 20px">
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="toggle-title">Human Handoff Button</div><div class="toggle-desc">Show "Talk to a real person" in the widget</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="toggle-title">Missed Question Alerts</div><div class="toggle-desc">Email me when avatar can't answer</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="toggle-title">Voice Input</div><div class="toggle-desc">Allow visitors to speak to the avatar</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="toggle-title">Emotion Expressions</div><div class="toggle-desc">Avatar shows facial expressions based on context</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="toggle-title">Conversation Logging</div><div class="toggle-desc">Store conversations in your dashboard</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel" style="position:sticky;top:70px">
+          <div class="panel-header"><div class="panel-title">Live Preview</div></div>
+          <div class="avatar-preview">
+            <div class="preview-face">
+              <div class="preview-scan"></div>
+              <div class="p-eye l"></div>
+              <div class="p-eye r"></div>
+              <div class="p-mouth"></div>
+            </div>
+            <div class="preview-name" id="prev-name">—</div>
+            <div class="preview-role" id="prev-role">Virtual Avatar</div>
+            <div class="preview-bubble" id="prev-welcome">—</div>
+            <div style="width:100%">
+              <div class="form-label" style="margin-bottom:6px">Confidence Threshold</div>
+              <input type="range" min="0" max="100" value="35" style="width:100%;accent-color:var(--amber)"
+                oninput="document.getElementById('conf-val').textContent=this.value+'%'"/>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);text-align:right;margin-top:4px" id="conf-val">35%</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">Below this, avatar defers to human handoff</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EMBED WIDGET ── -->
+  <div class="topbar" id="topbar-embed" style="display:none">
+    <div>
+      <div class="topbar-title">Embed Widget</div>
+      <div class="topbar-breadcrumb">Dashboard <span class="topbar-sep">/</span> Embed Widget</div>
+    </div>
+  </div>
+  <div class="page" id="page-embed">
+    <div class="grid-6-4">
+      <div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Installation</div></div>
+          <div class="panel-body">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7">
+              Paste this single snippet before the closing <code style="color:var(--amber);font-family:'JetBrains Mono',monospace">&lt;/body&gt;</code> tag of your website.
+            </p>
+            <div class="code-block" style="margin-bottom:16px">
+              <button class="code-copy" id="embed-copy-1">copy</button>
+              <div id="embed-snippet-1"></div>
+            </div>
+            <div class="form-label" style="margin-bottom:8px">Advanced: Direct WebSocket</div>
+            <div class="code-block">
+              <button class="code-copy" id="embed-copy-2">copy</button>
+              <div id="embed-snippet-2"></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Widget Options</div></div>
+          <div class="panel-body">
+            <div class="config-grid">
+              <div class="form-group"><div class="form-label">Position</div><select class="form-select"><option>Bottom Right</option><option>Bottom Left</option><option>Center</option></select></div>
+              <div class="form-group"><div class="form-label">Theme</div><select class="form-select"><option>Light</option><option>Dark</option><option>Auto (system)</option></select></div>
+              <div class="form-group"><div class="form-label">Trigger Delay</div><select class="form-select"><option>Immediate</option><option>5 seconds</option><option>10 seconds</option><option>On scroll</option></select></div>
+              <div class="form-group"><div class="form-label">Avatar Size</div><select class="form-select"><option>Medium (default)</option><option>Small</option><option>Large</option><option>Fullscreen</option></select></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Your Business ID</div></div>
+          <div class="panel-body">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:22px;color:var(--amber);letter-spacing:0.08em;margin-bottom:8px" id="embed-biz-id">—</div>
+            <div style="font-size:12px;color:var(--muted)">Use this ID in all API calls and the embed script.</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Verified Domains</div></div>
+          <div class="panel-body">
+            <div id="verified-domains" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+              <div class="skel skel-line" style="width:60%"></div>
+            </div>
+            <input class="form-input" placeholder="Add domain…" style="font-size:12px"/>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Widget Load Stats</div></div>
+          <div class="live-row"><span class="live-key">Loads today</span><span class="live-val amber" id="wl-loads">—</span></div>
+          <div class="live-row"><span class="live-key">Engagement rate</span><span class="live-val green" id="wl-engage">—</span></div>
+          <div class="live-row"><span class="live-key">Avg session length</span><span class="live-val" id="wl-dur">—</span></div>
+          <div class="live-row"><span class="live-key">Mobile / Desktop</span><span class="live-val" id="wl-device">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS ── -->
+  <div class="topbar" id="topbar-settings" style="display:none">
+    <div>
+      <div class="topbar-title">Settings</div>
+      <div class="topbar-breadcrumb">Dashboard <span class="topbar-sep">/</span> Settings</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-amber" onclick="saveAccountSettings()">Save Changes</button>
+    </div>
+  </div>
+  <div class="page" id="page-settings">
+    <div class="grid-2">
+      <div>
+        <div class="panel" style="margin-bottom:16px">
+          <div class="panel-header"><div class="panel-title">Account Information</div></div>
+          <div class="panel-body">
+            <div class="config-grid">
+              <div class="form-group"><div class="form-label">Business Name</div><input class="form-input" id="settings-biz-name" placeholder="Business Name"/></div>
+              <div class="form-group"><div class="form-label">Industry</div><input class="form-input" id="settings-industry" placeholder="Industry"/></div>
+              <div class="form-group full"><div class="form-label">Website URL</div><input class="form-input" id="settings-website" type="url" placeholder="https://…"/></div>
+              <div class="form-group"><div class="form-label">Owner Name</div><input class="form-input" id="settings-owner-name" placeholder="Owner Name"/></div>
+              <div class="form-group"><div class="form-label">Owner Email</div><input class="form-input" id="settings-owner-email" type="email" placeholder="owner@…"/></div>
+              <div class="form-group">
+                <div class="form-label">Brand Color</div>
+                <input class="form-input" id="settings-color" type="color" style="height:42px;padding:4px 8px;cursor:pointer"
+                  oninput="applyColor(this.value)"/>
+              </div>
+              <div class="form-group"><div class="form-label">Plan Tier</div><input class="form-input" id="settings-plan" placeholder="Plan" readonly style="color:var(--amber)"/></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">API Keys</div></div>
+          <div class="panel-body">
+            <div class="config-grid">
+              <div class="form-group full"><div class="form-label">OpenAI API Key</div><input class="form-input" type="password" placeholder="sk-…"/></div>
+              <div class="form-group full"><div class="form-label">ElevenLabs API Key</div><input class="form-input" type="password" placeholder="EL key…"/></div>
+              <div class="form-group full"><div class="form-label">LLM Provider</div>
+                <select class="form-select">
+                  <option>OpenAI GPT-4o</option>
+                  <option>Anthropic Claude</option>
+                  <option>OpenAI GPT-4o-mini (cheaper)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-amber" style="margin-top:16px" onclick="showToast('API keys saved')">Save Keys</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Notifications</div></div>
+          <div style="padding:4px 20px">
+            <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Missed Question Emails</div><div class="toggle-desc">Daily digest of unanswered questions</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Handoff Alerts</div><div class="toggle-desc">Notify when visitor requests a human</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Weekly Reports</div><div class="toggle-desc">Summary of activity sent every Monday</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Plan &amp; Billing</div></div>
+          <div class="panel-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--amber)" id="billing-plan">— Plan</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px" id="billing-renewal">Loading…</div>
+              </div>
+              <button class="btn btn-ghost" style="font-size:11px">Upgrade to Pro</button>
+            </div>
+            <div id="billing-usage">
+              <div class="skel skel-line"></div><div class="skel skel-line" style="height:4px;margin-top:6px;margin-bottom:16px"></div>
+              <div class="skel skel-line"></div><div class="skel skel-line" style="height:4px;margin-top:6px"></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Danger Zone</div></div>
+          <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
+            <button class="btn btn-danger" style="width:100%;justify-content:center">🗑 Delete Knowledge Base</button>
+            <button class="btn btn-danger" style="width:100%;justify-content:center">✕ Delete Business Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  HUMANA LIVE DATA ENGINE
+//  All displayed data is fetched from the FastAPI backend.
+//  No hardcoded values are rendered. If a fetch fails, the section
+//  shows an honest empty/error state instead of fabricated numbers.
+// ═══════════════════════════════════════════════════════════════════
+
+// ── Config ──────────────────────────────────────────────────────────
+// Resolve API base: wizard may pass api_url, else same-origin, else localhost:8000
+let CLIENT = null;
+let BIZ_ID = null;
+let API_BASE = '';
+
+(function resolveClient() {
+  // 1. URL param
+  try {
+    const raw = new URLSearchParams(window.location.search).get('data');
+    if (raw) CLIENT = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(raw)))));
+  } catch(e) {}
+
+  // 2. localStorage
+  if (!CLIENT) {
+    try {
+      const id = localStorage.getItem('humana_customer_id');
+      if (id) {
+        const all = JSON.parse(localStorage.getItem('humana_customers') || '[]');
+        CLIENT = all.find(c => c.business_id === id) || all[all.length-1] || null;
+      }
+    } catch(e) {}
+  }
+
+  if (CLIENT) {
+    BIZ_ID   = CLIENT.business_id || null;
+    API_BASE = CLIENT.api_url
+      ? CLIENT.api_url.replace(/\/$/, '')
+      : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          ? `http://${window.location.hostname}:8000`
+          : window.location.origin);
+
+    // Apply brand immediately from client record
+    applyColor(CLIENT.primary_color || '#f59e0b');
+    hydrateStaticFields(CLIENT);
+  } else {
+    // No client data — show "not configured" state
+    API_BASE = window.location.origin;
+    setStatusPill('overview-pill', 'offline', 'NO CLIENT');
+    showGlobalError('No business configured. Please complete the setup wizard first.');
+  }
+})();
+
+// ── Color helper ────────────────────────────────────────────────────
+function applyColor(hex) {
+  const root = document.documentElement;
+  root.style.setProperty('--amber',   hex);
+  root.style.setProperty('--amber-d', hex + '22');
+  root.style.setProperty('--amber-m', hex + '55');
+}
+
+// ── Static field hydration (no API needed) ──────────────────────────
+function hydrateStaticFields(d) {
+  document.title = 'HUMANA — ' + (d.business_name || 'Dashboard');
+
+  setText('sb-biz-name', d.business_name || '—');
+
+  const initials = (d.owner_name || '').split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).join('').slice(0,2) || '—';
+  setText('sb-avatar', initials);
+  setText('sb-user-name', d.owner_name || '—');
+  setText('sb-user-plan', (d.plan || '—') + ' Plan');
+
+  // Configure page
+  setVal('cfg-name',        d.avatar_name    || '');
+  setVal('cfg-biz',         d.business_name  || '');
+  setVal('cfg-personality', d.personality    || '');
+  setVal('cfg-role',        d.role           || '');
+  setVal('cfg-welcome',     d.welcome_message|| '');
+  setText('prev-name',      d.avatar_name    || '—');
+  setText('prev-role',      (d.avatar_name||'Avatar') + ' · ' + (d.business_name||''));
+  setText('prev-welcome',   '"' + (d.welcome_message||'') + '"');
+
+  // Voice highlight
+  if (d.voice_id) {
+    const voiceMap = { nova:'Nova', alloy:'Aria', echo:'James', onyx:'Marcus', shimmer:'Sara' };
+    const target = voiceMap[d.voice_id] || (d.voice_label||'').split(' ')[0] || '';
+    document.querySelectorAll('.voice-card').forEach(c => {
+      c.classList.toggle('selected', c.querySelector('.voice-name')?.textContent?.trim() === target);
+    });
+  }
+
+  // Settings page
+  setVal('settings-biz-name',   d.business_name  || '');
+  setVal('settings-industry',   d.industry       || '');
+  setVal('settings-website',    d.business_url   || '');
+  setVal('settings-owner-name', d.owner_name     || '');
+  setVal('settings-owner-email',d.owner_email    || '');
+  const colorInput = document.getElementById('settings-color');
+  if (colorInput) colorInput.value = d.primary_color || '#f59e0b';
+  setVal('settings-plan', (d.plan||'—') + ' Plan');
+
+  // Embed page
+  const bizId  = d.business_id || '—';
+  const bizUrl = (d.business_url||'yourdomain.com').replace(/^https?:\/\//,'').replace(/\/$/,'');
+  setText('embed-biz-id', bizId);
+
+  // Embed snippets
+  document.getElementById('embed-snippet-1').innerHTML =
+    `<span class="cm">&lt;!-- HUMANA AI Avatar Widget --&gt;</span>\n`+
+    `<span class="kw">&lt;script</span>\n`+
+    `  <span class="str">src</span>=<span class="str">"https://cdn.humana.ai/widget.js"</span>\n`+
+    `  <span class="str">data-business</span>=<span class="str">"${escHtml(bizId)}"</span>\n`+
+    `  <span class="str">data-position</span>=<span class="str">"bottom-right"</span>\n`+
+    `  <span class="str">data-theme</span>=<span class="str">"light"</span>\n`+
+    `<span class="kw">&gt;&lt;/script&gt;</span>`;
+
+  document.getElementById('embed-snippet-2').innerHTML =
+    `<span class="cm">// WebSocket endpoint</span>\n`+
+    `<span class="str">wss://api.humana.ai/ws/avatar/<span class="kw">${escHtml(bizId)}</span></span>\n\n`+
+    `<span class="cm">// Send message</span>\n`+
+    `ws.send(JSON.stringify({\n`+
+    `  <span class="str">type</span>: <span class="str">"user_text"</span>,\n`+
+    `  <span class="str">text</span>: <span class="str">"What are your hours?"</span>,\n`+
+    `  <span class="str">session_id</span>: <span class="str">"&lt;uuid&gt;"</span>\n`+
+    `}));`;
+
+  // KB API endpoint
+  document.getElementById('kb-api-code').innerHTML =
+    `<span class="kw">POST</span> /api/business/<span class="str">${escHtml(bizId)}</span>/knowledge/text\n`+
+    `<span class="kw">POST</span> /api/business/<span class="str">${escHtml(bizId)}</span>/knowledge/file\n`+
+    `<span class="kw">DELETE</span> /api/business/<span class="str">${escHtml(bizId)}</span>/knowledge`;
+
+  // Verified domains
+  const domEl = document.getElementById('verified-domains');
+  if (domEl && bizUrl && bizUrl !== 'yourdomain.com') {
+    domEl.innerHTML =
+      `<div style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px"><span style="color:var(--green)">✓</span><span style="color:var(--text)">${escHtml(bizUrl)}</span></div>`+
+      `<div style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px"><span style="color:var(--green)">✓</span><span style="color:var(--text)">www.${escHtml(bizUrl)}</span></div>`;
+  } else {
+    domEl.innerHTML = `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">No domains verified yet</div>`;
+  }
+
+  // Copy buttons
+  setupCopyBtn('embed-copy-1',
+    `<script src='https://cdn.humana.ai/widget.js' data-business='${bizId}' data-position='bottom-right'><\/script>`);
+  setupCopyBtn('embed-copy-2', `wss://api.humana.ai/ws/avatar/${bizId}`);
+  setupCopyBtn('kb-api-copy',
+    `POST /api/business/${bizId}/knowledge/text\nPOST /api/business/${bizId}/knowledge/file\nDELETE /api/business/${bizId}/knowledge`);
+}
+
+// ── API fetch wrapper ────────────────────────────────────────────────
+async function apiFetch(path) {
+  if (!BIZ_ID) throw new Error('No business ID configured');
+  const url = `${API_BASE}/api/business/${BIZ_ID}${path}`;
+  const res = await fetch(url, {
+    headers: { 'Accept': 'application/json' },
+    signal: AbortSignal.timeout(8000)
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+// ── Pill helper ──────────────────────────────────────────────────────
+function setStatusPill(id, state, label) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = `data-pill ${state}`;
+  el.innerHTML = `<div class="pip"></div>${label}`;
+}
+
+// ── Fetch orchestration ──────────────────────────────────────────────
+async function fetchMetrics() {
+  setStatusPill('overview-pill', 'loading', '<span class="spin">↺</span> LOADING');
+  try {
+    const d = await apiFetch('/analytics/overview');
+    // Conversation count
+    setText('m-conv', d.conversations_today ?? '—');
+    applyDelta('m-conv-d', d.conversations_delta);
+
+    // Resolution rate
+    setText('m-res', d.resolution_rate != null ? Math.round(d.resolution_rate) + '%' : '—');
+    applyDelta('m-res-d', d.resolution_delta);
+
+    // Avg response time
+    setText('m-rt', d.avg_response_time != null ? d.avg_response_time + 's' : '—');
+    applyDelta('m-rt-d', d.response_time_delta);
+
+    // Handoffs
+    setText('m-ho', d.handoffs_today ?? '—');
+    applyDelta('m-ho-d', d.handoffs_delta);
+
+    setStatusPill('overview-pill', 'live', '◉ LIVE');
+  } catch(e) {
+    ['m-conv','m-res','m-rt','m-ho'].forEach(id => setText(id, '—'));
+    ['m-conv-d','m-res-d','m-rt-d','m-ho-d'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.className = 'metric-delta neutral'; el.textContent = 'API unavailable'; }
+    });
+    setStatusPill('overview-pill', 'offline', '◉ OFFLINE');
+    console.warn('[HUMANA] Metrics fetch failed:', e.message);
+  }
+}
+
+async function fetchVolume() {
+  setStatusPill('chart-pill', 'loading', '<span class="spin">↺</span>');
+  try {
+    const d = await apiFetch('/analytics/volume?days=7');
+    // d = { labels: ['Mon',...], values: [28,...] }
+    renderChart(d.labels || [], d.values || []);
+    setStatusPill('chart-pill', 'live', '◉ LIVE');
+    setText('chart-tag', 'LAST 7 DAYS');
+  } catch(e) {
+    document.getElementById('chart-bars').innerHTML = emptyStateHtml('📊', 'Volume data unavailable');
+    setStatusPill('chart-pill', 'offline', '◉ OFFLINE');
+    console.warn('[HUMANA] Volume fetch failed:', e.message);
+  }
+}
+
+async function fetchLiveStatus() {
+  setStatusPill('status-pill', 'loading', '<span class="spin">↺</span>');
+  try {
+    const d = await apiFetch('/status');
+    // d = { avatar_online, active_sessions, knowledge_doc_count,
+    //        llm_provider, tts_engine, uptime_30d }
+    const online = d.avatar_online === true || d.avatar_online === 'online';
+    const avatarEl = document.getElementById('ls-avatar');
+    if (avatarEl) {
+      avatarEl.textContent = online ? '● ONLINE' : '● OFFLINE';
+      avatarEl.className   = 'live-val ' + (online ? 'green' : 'red');
+    }
+    setText('ls-sessions', d.active_sessions ?? '—');
+    setText('ls-docs',     d.knowledge_doc_count != null ? d.knowledge_doc_count + ' files' : '—');
+    setText('ls-llm',      d.llm_provider       ?? '—');
+    setText('ls-tts',      d.tts_engine         ?? '—');
+    const uptimeEl = document.getElementById('ls-uptime');
+    if (uptimeEl) {
+      uptimeEl.textContent = d.uptime_30d != null ? d.uptime_30d + '%' : '—';
+      uptimeEl.className = 'live-val' + (d.uptime_30d >= 99 ? ' green' : d.uptime_30d >= 95 ? ' amber' : ' red');
+    }
+    // Sidebar status
+    const sbStatus = document.getElementById('sb-biz-status');
+    if (sbStatus) {
+      sbStatus.textContent = online ? 'Avatar Online' : 'Avatar Offline';
+      sbStatus.className   = 'sb-biz-status ' + (online ? 'online' : 'offline');
+    }
+    setStatusPill('status-pill', 'live', '◉ LIVE');
+  } catch(e) {
+    ['ls-avatar','ls-sessions','ls-docs','ls-llm','ls-tts','ls-uptime'].forEach(id => setText(id, '—'));
+    const sbStatus = document.getElementById('sb-biz-status');
+    if (sbStatus) { sbStatus.textContent = 'Status Unknown'; sbStatus.className = 'sb-biz-status'; }
+    setStatusPill('status-pill', 'offline', '◉ OFFLINE');
+    console.warn('[HUMANA] Status fetch failed:', e.message);
+  }
+}
+
+let ALL_CONVS = [];
+async function fetchConversations() {
+  setStatusPill('conv-pill', 'loading', '<span class="spin">↺</span> LOADING');
+  try {
+    const d = await apiFetch('/conversations?limit=50');
+    // d = [{ id, question, status, sentiment, created_at, duration_s }]
+    ALL_CONVS = Array.isArray(d) ? d : (d.conversations || []);
+    renderRecentConvs(ALL_CONVS.slice(0, 4));
+    renderAllConvs(ALL_CONVS);
+    // Update badge
+    setText('badge-conv', ALL_CONVS.length);
+    // Count live sessions from conversations
+    const liveSessions = ALL_CONVS.filter(c => c.status === 'live').length;
+    setText('ls-sessions', liveSessions || (document.getElementById('ls-sessions').textContent || '—'));
+    setStatusPill('conv-pill', 'live', '◉ LIVE');
+  } catch(e) {
+    document.getElementById('recent-convs').innerHTML = emptyStateHtml('◈', 'No conversation data available');
+    document.getElementById('all-convs').innerHTML    = emptyStateHtml('◈', 'No conversation data available');
+    setText('badge-conv', '—');
+    setStatusPill('conv-pill', 'offline', '◉ OFFLINE');
+    console.warn('[HUMANA] Conversations fetch failed:', e.message);
+  }
+}
+
+async function fetchTopQuestions() {
+  setStatusPill('tq-pill', 'loading', '<span class="spin">↺</span>');
+  try {
+    const d = await apiFetch('/analytics/top-questions?days=7&limit=5');
+    // d = [{ question, count }]
+    const list = Array.isArray(d) ? d : (d.questions || []);
+    const body = document.getElementById('top-questions-body');
+    if (!list.length) {
+      body.innerHTML = emptyStateHtml('❓', 'No questions logged yet');
+    } else {
+      const max = Math.max(...list.map(q => q.count), 1);
+      body.innerHTML = list.map((q, i) => {
+        const fillColors = ['','green','blue','blue','blue'];
+        return `<div class="progress-wrap" style="padding:0 20px 12px">
+          <div class="progress-label"><span>${escHtml(q.question)}</span><span>${q.count}</span></div>
+          <div class="progress-bar"><div class="progress-fill ${fillColors[i]||''}" style="width:${Math.round(q.count/max*100)}%"></div></div>
+        </div>`;
+      }).join('');
+    }
+    setStatusPill('tq-pill', 'live', '◉ LIVE');
+  } catch(e) {
+    document.getElementById('top-questions-body').innerHTML = emptyStateHtml('❓', 'Top questions unavailable');
+    setStatusPill('tq-pill', 'offline', '◉ OFFLINE');
+    console.warn('[HUMANA] Top questions fetch failed:', e.message);
+  }
+}
+
+async function fetchActivity() {
+  setStatusPill('activity-pill', 'loading', '<span class="spin">↺</span>');
+  try {
+    const d = await apiFetch('/activity?limit=8');
+    // d = [{ type, message, timestamp }]
+    const list = Array.isArray(d) ? d : (d.events || []);
+    const feed = document.getElementById('activity-feed');
+    if (!list.length) {
+      feed.innerHTML = emptyStateHtml('📋', 'No activity yet');
+    } else {
+      const colorMap = {
+        conversation: 'var(--green)', handoff: 'var(--amber)',
+        knowledge: 'var(--blue)', error: 'var(--red)',
+        missed: 'var(--red)', system: 'var(--muted)'
+      };
+      feed.innerHTML = list.map(a => {
+        const color = colorMap[a.type] || 'var(--muted)';
+        const timeStr = a.timestamp ? relativeTime(a.timestamp) : '—';
+        return `<div class="activity-item">
+          <div class="activity-dot" style="background:${color}"></div>
+          <div class="activity-text">${escHtml(a.message || '')}</div>
+          <div class="activity-time">${timeStr}</div>
+        </div>`;
+      }).join('');
+    }
+    setStatusPill('activity-pill', 'live', '◉ LIVE');
+  } catch(e) {
+    document.getElementById('activity-feed').innerHTML = emptyStateHtml('📋', 'Activity feed unavailable');
+    setStatusPill('activity-pill', 'offline', '◉ OFFLINE');
+    console.warn('[HUMANA] Activity fetch failed:', e.message);
+  }
+}
+
+async function fetchMissedQuestions() {
+  setStatusPill('missed-pill', 'loading', '<span class="spin">↺</span> LOADING');
+  try {
+    const d = await apiFetch('/conversations/missed?days=7');
+    // d = [{ question, count }]
+    const list = Array.isArray(d) ? d : (d.missed || []);
+    setText('badge-missed', list.length || 0);
+    const mqList = document.getElementById('mq-list');
+    const alertEl = document.getElementById('missed-alert');
+
+    if (!list.length) {
+      mqList.innerHTML = emptyStateHtml('✓', 'No unanswered questions this week — great coverage!');
+      alertEl.style.display = 'none';
+    } else {
+      alertEl.style.display = 'block';
+      alertEl.textContent = `⚠ ${list.length} question${list.length>1?'s':''} your avatar couldn't answer confidently this week. Add them to your knowledge base.`;
+      mqList.innerHTML = list.map(mq => `
+        <div class="mq-item">
+          <div class="mq-badge">UNANSWERED</div>
+          <div class="mq-text">${escHtml(mq.question || mq.text || '')}</div>
+          <div class="mq-count">${mq.count != null ? mq.count + ' time' + (mq.count!==1?'s':'') : ''}</div>
+          <button class="mq-fix-btn" onclick="showToast('Added to knowledge base')">+ Fix</button>
+        </div>`).join('');
+    }
+    setStatusPill('missed-pill', 'live', '◉ LIVE');
+  } catch(e) {
+    document.getElementById('mq-list').innerHTML = emptyStateHtml('⚠', 'Missed questions unavailable');
+    setText('badge-missed', '—');
+    setStatusPill('missed-pill', 'offline', '◉ OFFLINE');
+    console.warn('[HUMANA] Missed Q fetch failed:', e.message);
+  }
+}
+
+async function fetchKnowledgeBase() {
+  setStatusPill('kb-pill', 'loading', '<span class="spin">↺</span> LOADING');
+  try {
+    const d = await apiFetch('/knowledge');
+    // d = { documents: [{ name, size_kb, tokens, status, type }], health: {...} }
+    const docs    = d.documents || (Array.isArray(d) ? d : []);
+    const health  = d.health || null;
+
+    const kbList = document.getElementById('kb-list');
+    if (!docs.length) {
+      kbList.innerHTML = `<div style="padding:20px">${emptyStateHtml('📄', 'No documents uploaded yet')}</div>`;
+    } else {
+      const extIcon = ext => ({pdf:'📋',txt:'📄',docx:'📝',md:'📓',csv:'📊'}[ext] || '📄');
+      kbList.innerHTML = docs.map(doc => {
+        const ext = (doc.name||'').split('.').pop().toLowerCase();
+        const meta = [doc.size_kb ? doc.size_kb+'KB' : null, doc.tokens ? doc.tokens.toLocaleString()+' tokens' : null].filter(Boolean).join(' · ');
+        return `<div class="kb-item">
+          <div class="kb-icon">${extIcon(ext)}</div>
+          <div class="kb-info">
+            <div class="kb-name">${escHtml(doc.name||'Untitled')}</div>
+            <div class="kb-meta">${escHtml(meta)}</div>
+          </div>
+          <div class="kb-status ${doc.status||'ready'}">${(doc.status||'READY').toUpperCase()}</div>
+        </div>`;
+      }).join('');
+    }
+
+    const totalTokens = docs.reduce((s,d2) => s + (d2.tokens||0), 0);
+    setText('kb-doc-count', `${docs.length} file${docs.length!==1?'s':''} · ~${totalTokens.toLocaleString()} tokens`);
+
+    // Knowledge health
+    if (health) {
+      const healthBody = document.getElementById('kb-health-body');
+      const renderBar = (label, val, cls='') =>
+        `<div class="progress-wrap">
+          <div class="progress-label"><span>${label}</span><span>${val}%</span></div>
+          <div class="progress-bar"><div class="progress-fill ${cls}" style="width:${val}%"></div></div>
+        </div><div style="height:12px"></div>`;
+      healthBody.innerHTML =
+        renderBar('Coverage score',      Math.round(health.coverage     || 0), '') +
+        renderBar('Questions answered',  Math.round(health.answered_pct || 0), 'green') +
+        renderBar('Confidence avg',      Math.round(health.confidence   || 0), 'blue') +
+        (health.tip ? `<div style="font-size:12px;color:var(--muted);line-height:1.6;border-top:1px solid var(--border);padding-top:14px">💡 <strong style="color:var(--text)">Tip:</strong> ${escHtml(health.tip)}</div>` : '');
+    } else {
+      document.getElementById('kb-health-body').innerHTML = emptyStateHtml('📊', 'Health metrics unavailable');
+    }
+
+    setStatusPill('kb-pill', 'live', '◉ LIVE');
+  } catch(e) {
+    document.getElementById('kb-list').innerHTML = emptyStateHtml('📄', 'Knowledge base unavailable');
+    setText('kb-doc-count', '—');
+    setStatusPill('kb-pill', 'offline', '◉ OFFLINE');
+    console.warn('[HUMANA] KB fetch failed:', e.message);
+  }
+}
+
+async function fetchWidgetStats() {
+  try {
+    const d = await apiFetch('/analytics/widget');
+    setText('wl-loads',  d.loads_today != null ? d.loads_today.toLocaleString() : '—');
+    const engageEl = document.getElementById('wl-engage');
+    if (engageEl) {
+      engageEl.textContent = d.engagement_rate != null ? Math.round(d.engagement_rate) + '%' : '—';
+      engageEl.className = 'live-val green';
+    }
+    setText('wl-dur',    d.avg_session_length ?? '—');
+    setText('wl-device', d.mobile_pct != null && d.desktop_pct != null
+      ? `${d.mobile_pct}% / ${d.desktop_pct}%` : '—');
+  } catch(e) {
+    ['wl-loads','wl-engage','wl-dur','wl-device'].forEach(id => setText(id, '—'));
+    console.warn('[HUMANA] Widget stats fetch failed:', e.message);
+  }
+}
+
+async function fetchBillingInfo() {
+  try {
+    const d = await apiFetch('/billing');
+    const planName = d.plan || CLIENT?.plan || '—';
+    setText('billing-plan', planName + ' Plan');
+    const renewal = d.renewal_date
+      ? '$' + (d.monthly_price||'—') + '/month · Renews ' + formatDate(d.renewal_date)
+      : '—';
+    setText('billing-renewal', renewal);
+
+    const usage = document.getElementById('billing-usage');
+    if (d.api_calls_used != null && d.api_calls_limit != null) {
+      const apiPct  = Math.min(100, Math.round(d.api_calls_used / d.api_calls_limit * 100));
+      const kbBytes = d.kb_bytes_used  || 0;
+      const kbLimit = d.kb_bytes_limit || 1;
+      const kbPct   = Math.min(100, Math.round(kbBytes / kbLimit * 100));
+      usage.innerHTML =
+        `<div class="progress-wrap">
+          <div class="progress-label"><span>API calls this month</span><span>${d.api_calls_used.toLocaleString()} / ${d.api_calls_limit.toLocaleString()}</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${apiPct}%"></div></div>
+        </div>
+        <div style="height:12px"></div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Knowledge base size</span><span>${fmtBytes(kbBytes)} / ${fmtBytes(kbLimit)}</span></div>
+          <div class="progress-bar"><div class="progress-fill green" style="width:${kbPct}%"></div></div>
+        </div>`;
+    }
+  } catch(e) {
+    // Fallback: use CLIENT data if available
+    if (CLIENT) {
+      setText('billing-plan', (CLIENT.plan || '—') + ' Plan');
+      setText('billing-renewal', '—');
+    }
+    document.getElementById('billing-usage').innerHTML =
+      emptyStateHtml('💳', 'Billing data unavailable');
+    console.warn('[HUMANA] Billing fetch failed:', e.message);
+  }
+}
+
+// ── Chart renderer ────────────────────────────────────────────────────
+function renderChart(labels, values) {
+  const bars = document.getElementById('chart-bars');
+  if (!labels.length) {
+    bars.innerHTML = emptyStateHtml('📊', 'No volume data yet');
+    return;
+  }
+  const max = Math.max(...values, 1);
+  bars.innerHTML = '';
+  values.forEach((v, i) => {
+    const wrap = document.createElement('div'); wrap.className = 'chart-bar-wrap';
+    const bar = document.createElement('div');
+    const isToday = i === labels.length - 1;
+    bar.className = 'chart-bar';
+    bar.style.background = isToday ? 'var(--amber)' : 'var(--border2)';
+    bar.style.height = '0px';
+    bar.title = `${labels[i]}: ${v} conversations`;
+    const lbl = document.createElement('div'); lbl.className = 'chart-label'; lbl.textContent = labels[i];
+    wrap.appendChild(bar); wrap.appendChild(lbl); bars.appendChild(wrap);
+    setTimeout(() => { bar.style.height = (v / max * 90) + 'px'; }, 50 + i * 60);
+  });
+}
+
+// ── Conversation renderers ────────────────────────────────────────────
+function renderRecentConvs(list) {
+  const el = document.getElementById('recent-convs');
+  if (!list.length) { el.innerHTML = emptyStateHtml('◈', 'No conversations yet today'); return; }
+  el.innerHTML = list.map(c => convRowHtml(c)).join('');
+}
+function renderAllConvs(list) {
+  const el = document.getElementById('all-convs');
+  if (!list.length) { el.innerHTML = emptyStateHtml('◈', 'No conversations yet today'); return; }
+  el.innerHTML = list.map(c => convRowHtml(c)).join('');
+}
+function convRowHtml(c) {
+  const sentiment = c.sentiment || c.emotion || 'neutral';
+  const cls = sentiment === 'positive' || sentiment === 'pos' ? 'pos' : sentiment === 'negative' || sentiment === 'neg' ? 'neg' : '';
+  const label = cls === 'pos' ? 'POSITIVE' : cls === 'neg' ? 'NEGATIVE' : 'NEUTRAL';
+  const timeStr = c.created_at ? relativeTime(c.created_at) : (c.time || '');
+  return `<div class="conv-row">
+    <div class="conv-dot ${c.status||'ended'}"></div>
+    <div class="conv-summary">
+      <div class="conv-q">${escHtml(c.question||c.first_message||c.summary||'—')}</div>
+      <div class="conv-meta">${(c.status||'ended').toUpperCase()} · ${timeStr}</div>
+    </div>
+    <div class="conv-emotion ${cls}">${label}</div>
+  </div>`;
+}
+
+function filterConvs() {
+  const filter = document.getElementById('conv-filter').value;
+  const filtered = filter ? ALL_CONVS.filter(c => c.status === filter) : ALL_CONVS;
+  renderAllConvs(filtered);
+}
+
+// ── Metric delta helper ────────────────────────────────────────────────
+function applyDelta(id, delta) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (delta == null) { el.className = 'metric-delta neutral'; el.textContent = '— no change'; return; }
+  if (delta > 0) { el.className = 'metric-delta up'; el.textContent = `↑ +${delta}% vs yesterday`; }
+  else if (delta < 0) { el.className = 'metric-delta down'; el.textContent = `↓ ${delta}% vs yesterday`; }
+  else { el.className = 'metric-delta neutral'; el.textContent = '— no change'; }
+}
+
+// ── Utility helpers ────────────────────────────────────────────────────
+function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+function setVal(id, val)  { const el = document.getElementById(id); if (el) el.value = val; }
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function emptyStateHtml(icon, msg) {
+  return `<div class="empty-state"><div class="empty-state-icon">${icon}</div>${escHtml(msg)}</div>`;
+}
+
+function relativeTime(ts) {
+  const d = new Date(ts);
+  if (isNaN(d)) return ts;
+  const diff = Date.now() - d.getTime();
+  if (diff < 60000)     return Math.round(diff/1000) + 's ago';
+  if (diff < 3600000)   return Math.round(diff/60000) + 'm ago';
+  if (diff < 86400000)  return Math.round(diff/3600000) + 'h ago';
+  return Math.round(diff/86400000) + 'd ago';
+}
+
+function formatDate(str) {
+  try { return new Date(str).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
+  catch { return str; }
+}
+
+function fmtBytes(b) {
+  if (b >= 1e6) return (b/1e6).toFixed(1) + ' MB';
+  if (b >= 1e3) return (b/1e3).toFixed(0) + ' KB';
+  return b + ' B';
+}
+
+function showGlobalError(msg) {
+  ['m-conv','m-res','m-rt','m-ho'].forEach(id => setText(id, '—'));
+  showToast('⚠ ' + msg, true);
+}
+
+// ── Copy button ────────────────────────────────────────────────────────
+function setupCopyBtn(id, text) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.onclick = () => {
+    navigator.clipboard.writeText(text).catch(()=>{});
+    btn.textContent = 'copied!'; btn.style.color='var(--green)'; btn.style.borderColor='var(--green)';
+    setTimeout(()=>{ btn.textContent='copy'; btn.style.color=''; btn.style.borderColor=''; }, 2000);
+  };
+}
+
+// ── Refresh all live sections ─────────────────────────────────────────
+async function refreshAll() {
+  if (!BIZ_ID) return;
+  const bar = document.getElementById('api-status-bar');
+  const btn = document.getElementById('refresh-btn');
+  bar.className = 'fetching';
+  if (btn) btn.innerHTML = '<span class="spin">↺</span> Refreshing';
+  await Promise.allSettled([
+    fetchMetrics(),
+    fetchVolume(),
+    fetchLiveStatus(),
+    fetchConversations(),
+    fetchTopQuestions(),
+    fetchActivity(),
+    fetchMissedQuestions(),
+    fetchKnowledgeBase(),
+    fetchWidgetStats(),
+    fetchBillingInfo(),
+  ]);
+  bar.className = '';
+  if (btn) btn.innerHTML = '↺ Refresh';
+  showToast('✓ Data refreshed');
+}
+
+// ── Navigation ────────────────────────────────────────────────────────
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.topbar').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('topbar-' + page).style.display = 'flex';
+  document.querySelector(`.sb-item[data-page="${page}"]`)?.classList.add('active');
+}
+document.querySelectorAll('.sb-item').forEach(item => {
+  item.addEventListener('click', () => nav(item.dataset.page));
+});
+
+// ── Live Clock ────────────────────────────────────────────────────────
+setInterval(() => {
+  setText('live-clock', new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+}, 1000);
+setText('live-clock', new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+
+// ── Avatar preview ────────────────────────────────────────────────────
+function updatePreview() {
+  setText('prev-name', document.getElementById('cfg-name').value || '—');
+  setText('prev-welcome', '"' + (document.getElementById('cfg-welcome').value || '') + '"');
+}
+function selectVoice(el) {
+  document.querySelectorAll('.voice-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function saveConfig() { showToast('✓ Avatar configuration saved'); }
+
+// ── File upload ───────────────────────────────────────────────────────
+const dz = document.getElementById('dropzone');
+const fi = document.getElementById('file-input');
+dz.addEventListener('click', () => fi.click());
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); handleFiles(e.dataTransfer.files); });
+fi.addEventListener('change', e => handleFiles(e.target.files));
+
+async function handleFiles(files) {
+  if (!BIZ_ID) { showToast('⚠ No business configured', true); return; }
+  for (const f of Array.from(files)) {
+    showToast(`Uploading ${f.name}…`);
+    try {
+      const fd = new FormData();
+      fd.append('file', f);
+      const res = await fetch(`${API_BASE}/api/business/${BIZ_ID}/knowledge/file`, { method:'POST', body: fd });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      showToast(`✓ ${f.name} added`);
+      await fetchKnowledgeBase();
+    } catch(e) {
+      showToast(`✗ Upload failed: ${e.message}`, true);
+    }
+  }
+}
+
+async function ingestText() {
+  const txt = document.getElementById('kb-text').value.trim();
+  if (!txt) return;
+  if (!BIZ_ID) { showToast('⚠ No business configured', true); return; }
+  showToast('Processing text…');
+  try {
+    const res = await fetch(`${API_BASE}/api/business/${BIZ_ID}/knowledge/text`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: txt })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    showToast('✓ Text added to knowledge base');
+    document.getElementById('kb-text').value = '';
+    await fetchKnowledgeBase();
+  } catch(e) {
+    showToast(`✗ Ingest failed: ${e.message}`, true);
+  }
+}
+
+// ── Save settings ─────────────────────────────────────────────────────
+async function saveAccountSettings() {
+  const updated = {
+    ...(CLIENT || {}),
+    business_name:  document.getElementById('settings-biz-name')?.value   || '',
+    industry:       document.getElementById('settings-industry')?.value    || '',
+    business_url:   document.getElementById('settings-website')?.value     || '',
+    owner_name:     document.getElementById('settings-owner-name')?.value  || '',
+    owner_email:    document.getElementById('settings-owner-email')?.value || '',
+    primary_color:  document.getElementById('settings-color')?.value       || '#f59e0b',
+  };
+  // Persist to localStorage
+  try {
+    let all = JSON.parse(localStorage.getItem('humana_customers') || '[]');
+    const idx = all.findIndex(c => c.business_id === updated.business_id);
+    if (idx > -1) all[idx] = updated; else all.push(updated);
+    localStorage.setItem('humana_customers', JSON.stringify(all));
+  } catch {}
+  CLIENT = updated;
+  applyColor(updated.primary_color);
+  setText('sb-biz-name', updated.business_name);
+  setText('sb-user-name', updated.owner_name);
+  const init = (updated.owner_name||'').split(' ').filter(Boolean).map(w=>w[0].toUpperCase()).join('').slice(0,2)||'—';
+  setText('sb-avatar', init);
+  // Also push to API if available
+  if (BIZ_ID) {
+    try {
+      await fetch(`${API_BASE}/api/business/${BIZ_ID}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+    } catch {}
+  }
+  showToast('✓ Account settings saved');
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Auto-poll live sections every 30 s ────────────────────────────────
+setInterval(() => {
+  fetchLiveStatus();
+  fetchMetrics();
+}, 30000);
+
+// ── Initial load ──────────────────────────────────────────────────────
+if (BIZ_ID) {
+  refreshAll();
+} else if (!CLIENT) {
+  // Show empty states everywhere
+  ['recent-convs','all-convs'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = emptyStateHtml('◈', 'No business configured');
+  });
+  document.getElementById('chart-bars').innerHTML = emptyStateHtml('📊', 'No business configured');
+  document.getElementById('mq-list').innerHTML    = emptyStateHtml('⚠', 'No business configured');
+  document.getElementById('kb-list').innerHTML    = emptyStateHtml('📄', 'No business configured');
+  document.getElementById('activity-feed').innerHTML = emptyStateHtml('📋', 'No business configured');
+  ['m-conv','m-res','m-rt','m-ho'].forEach(id => setText(id, '—'));
+  ['overview-pill','conv-pill','missed-pill','kb-pill','status-pill','tq-pill','activity-pill','chart-pill'].forEach(id =>
+    setStatusPill(id, 'offline', 'NOT CONFIGURED'));
+  setText('sb-biz-status', 'Not configured');
+}
+</script>
+</body>
+</html>

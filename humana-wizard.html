@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HUMANA — Complete Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #0c0e12;
+  --panel:    #12151b;
+  --card:     #181c24;
+  --border:   #1e2330;
+  --border2:  #2a3040;
+  --text:     #e8eaf0;
+  --muted:    #6b7385;
+  --dim:      #3a4155;
+  --amber:    #f59e0b;
+  --amber-d:  #f59e0b22;
+  --amber-m:  #f59e0b55;
+  --green:    #10b981;
+  --green-d:  #10b98122;
+  --red:      #ef4444;
+  --red-d:    #ef444422;
+  --blue:     #3b82f6;
+  --purple:   #a855f7;
+  --pink:     #ec4899;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.bg-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--amber-d) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+  animation: pulse-glow 8s infinite alternate;
+}
+@keyframes pulse-glow {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+}
+
+.wizard-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 600px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  padding: 40px;
+}
+.wizard-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.logo-mark {
+  width: 48px; height: 48px;
+  background: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 800;
+  color: var(--bg);
+  margin: 0 auto 16px;
+}
+.wizard-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 24px; font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.wizard-subtitle {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.steps-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  position: relative;
+}
+.steps-nav::before {
+  content: '';
+  position: absolute;
+  top: 14px; left: 0; right: 0;
+  height: 1px;
+  background: var(--border2);
+  z-index: 0;
+}
+.progress-line {
+  position: absolute;
+  top: 14px; left: 0;
+  height: 1px;
+  background: var(--amber);
+  z-index: 0;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.step-dot {
+  position: relative;
+  z-index: 1;
+  width: 28px; height: 28px;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--muted);
+  transition: all 0.3s ease;
+}
+.step-dot.active {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: var(--amber-d);
+  box-shadow: 0 0 10px var(--amber-m);
+}
+.step-dot.completed {
+  border-color: var(--amber);
+  background: var(--amber);
+  color: var(--bg);
+}
+
+.step-content {
+  display: none;
+  animation: slideFade 0.4s ease forwards;
+}
+.step-content.active {
+  display: block;
+}
+@keyframes slideFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+.form-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 8px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 12px 16px;
+  font-family: 'Lato', sans-serif;
+  font-size: 14px; font-weight: 300;
+  outline: none; transition: border-color 0.15s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--amber);
+}
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+.form-row .form-group {
+  flex: 1;
+}
+
+.color-options {
+  display: flex;
+  gap: 12px;
+}
+.color-circle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.color-circle:hover { transform: scale(1.1); }
+.color-circle.selected { border-color: var(--text); transform: scale(1.1); }
+
+.wizard-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.btn {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 10px 24px; cursor: pointer;
+  border: none; transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-amber {
+  background: var(--amber); color: var(--bg);
+}
+.btn-amber:hover { background: #fbbf24; }
+.btn-amber:disabled { background: var(--border2); color: var(--muted); cursor: not-allowed; }
+.btn-ghost {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { border-color: var(--muted); color: var(--text); }
+
+.summary-card {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  padding: 24px;
+}
+.summary-section {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.summary-section:last-child {
+  margin-bottom: 0; padding-bottom: 0; border-bottom: none;
+}
+.summary-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--amber);
+  margin-bottom: 8px; letter-spacing: 0.1em;
+}
+.summary-item {
+  display: flex; justify-content: space-between; margin-bottom: 6px;
+  font-size: 13px;
+}
+.summary-key { color: var(--muted); }
+.summary-val { color: var(--text); font-weight: 400; }
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: var(--amber);
+}
+</style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<div class="wizard-container">
+  <div class="wizard-header">
+    <div class="logo-mark">H</div>
+    <div class="wizard-title">Complete Your Setup</div>
+    <div class="wizard-subtitle">Tell us about your business and AI assistant</div>
+  </div>
+
+  <div class="steps-nav">
+    <div class="progress-line" id="progress-line"></div>
+    <div class="step-dot active" data-step="1">1</div>
+    <div class="step-dot" data-step="2">2</div>
+    <div class="step-dot" data-step="3">3</div>
+    <div class="step-dot" data-step="4">4</div>
+  </div>
+
+  <form id="wizard-form" onsubmit="return false;">
+    
+    <!-- STEP 1: BUSINESS -->
+    <div class="step-content active" id="step-1">
+      <div class="form-group">
+        <label class="form-label">Business Name</label>
+        <input type="text" class="form-input" id="biz-name" placeholder="e.g. Coastal Medical Clinic" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Website URL (optional)</label>
+        <input type="url" class="form-input" id="biz-url" placeholder="https://coastalmedical.com">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Industry</label>
+          <select class="form-select" id="biz-industry">
+            <option value="Healthcare">Healthcare</option>
+            <option value="Real Estate">Real Estate</option>
+            <option value="Finance">Finance</option>
+            <option value="E-Commerce">E-Commerce</option>
+            <option value="Education">Education</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Plan Tier</label>
+          <select class="form-select" id="biz-plan">
+            <option value="Starter">Starter (Free)</option>
+            <option value="Professional" selected>Professional ($49/mo)</option>
+            <option value="Enterprise">Enterprise (Custom)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: AVATAR -->
+    <div class="step-content" id="step-2">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Avatar Name</label>
+          <input type="text" class="form-input" id="avatar-name" placeholder="e.g. Sarah" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Voice Selection</label>
+          <select class="form-select" id="avatar-voice">
+            <option value="nova">Nova (Friendly Female)</option>
+            <option value="alloy">Alloy (Professional Female)</option>
+            <option value="echo">Echo (Warm Male)</option>
+            <option value="onyx">Onyx (Deep Male)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Welcome Message</label>
+        <textarea class="form-textarea" id="avatar-welcome" rows="3" placeholder="Hi, I'm the digital assistant. How can I help you today?">Hi, I'm your AI assistant. How can I help you today?</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Brand Primary Color</label>
+        <div class="color-options" id="color-options">
+          <div class="color-circle selected" data-color="#f59e0b" style="background:#f59e0b"></div>
+          <div class="color-circle" data-color="#10b981" style="background:#10b981"></div>
+          <div class="color-circle" data-color="#3b82f6" style="background:#3b82f6"></div>
+          <div class="color-circle" data-color="#a855f7" style="background:#a855f7"></div>
+          <div class="color-circle" data-color="#ec4899" style="background:#ec4899"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: REVIEW -->
+    <div class="step-content" id="step-3">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
+        Review your configuration before creating your AI assistant.
+      </p>
+      <div class="summary-card">
+
+        <div class="summary-section">
+          <div class="summary-title">BUSINESS DETAILS</div>
+          <div class="summary-item"><span class="summary-key">Name:</span><span class="summary-val" id="sum-biz">—</span></div>
+          <div class="summary-item"><span class="summary-key">Website:</span><span class="summary-val" id="sum-url">—</span></div>
+          <div class="summary-item"><span class="summary-key">Industry:</span><span class="summary-val" id="sum-ind">—</span></div>
+          <div class="summary-item"><span class="summary-key">Plan:</span><span class="summary-val" id="sum-plan">—</span></div>
+        </div>
+
+        <div class="summary-section">
+          <div class="summary-title">AVATAR CONFIGURATION</div>
+          <div class="summary-item"><span class="summary-key">Avatar Name:</span><span class="summary-val" id="sum-avatar">—</span></div>
+          <div class="summary-item"><span class="summary-key">Voice:</span><span class="summary-val" id="sum-voice">—</span></div>
+          <div class="summary-item"><span class="summary-key">Welcome Message:</span><span class="summary-val" id="sum-welcome">—</span></div>
+          <div class="summary-item">
+            <span class="summary-key">Brand Color:</span>
+            <span class="summary-val" id="sum-color">—</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- STEP 4: COMPLETE -->
+    <div class="step-content" id="step-4">
+      <div class="summary-card">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+          <h3 style="font-family: 'Syne', sans-serif; margin-bottom: 8px;">Ready to Launch!</h3>
+          <p style="font-size: 13px; color: var(--muted);">Click create to set up your AI assistant and access your dashboard.</p>
+        </div>
+      </div>
+
+      <div id="api-result" style="display:none;margin-top:20px;padding:16px;font-size:13px;font-family:'JetBrains Mono',monospace;"></div>
+    </div>
+
+    <div class="wizard-footer">
+      <button type="button" class="btn btn-ghost" id="btn-prev" onclick="changeStep(-1)" style="visibility: hidden;">← Back</button>
+      <button type="button" class="btn btn-amber" id="btn-next" onclick="changeStep(1)">Next Step →</button>
+      <button type="button" class="btn btn-amber" id="btn-create" onclick="submitForm()" style="display: none;">Create & Launch →</button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+const API_URL = 'http://localhost:8000';
+let currentStep = 1;
+const totalSteps = 4;
+let selectedColor = '#f59e0b';
+let token = localStorage.getItem('humana_token');
+
+// Color picker — runs after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.color-circle').forEach(circle => {
+    circle.addEventListener('click', e => {
+      document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
+      e.currentTarget.classList.add('selected');
+      selectedColor = e.currentTarget.getAttribute('data-color');
+    });
+  });
+});
+
+function validateStep(step) {
+  if (step === 1) {
+    if (!document.getElementById('biz-name').value.trim()) { alert('Please enter your Business Name.'); return false; }
+  }
+  if (step === 2) {
+    if (!document.getElementById('avatar-name').value.trim()) { alert('Please enter your Avatar Name.'); return false; }
+  }
+  return true;
+}
+
+function updateSummary() {
+  document.getElementById('sum-biz').innerText = document.getElementById('biz-name').value || '—';
+  document.getElementById('sum-url').innerText = document.getElementById('biz-url').value || '—';
+  document.getElementById('sum-ind').innerText = document.getElementById('biz-industry').value;
+  document.getElementById('sum-plan').innerText = document.getElementById('biz-plan').value;
+  document.getElementById('sum-avatar').innerText = document.getElementById('avatar-name').value || '—';
+  
+  const voiceSel = document.getElementById('avatar-voice');
+  document.getElementById('sum-voice').innerText = voiceSel.options[voiceSel.selectedIndex].text;
+  document.getElementById('sum-welcome').innerText = document.getElementById('avatar-welcome').value;
+  
+  const colorWrap = document.getElementById('sum-color');
+  colorWrap.innerHTML = `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${selectedColor};flex-shrink:0;"></span>${selectedColor}`;
+}
+
+function changeStep(dir) {
+  if (dir === 1 && !validateStep(currentStep)) return;
+  if (dir === 1 && currentStep === 2) updateSummary();
+
+  document.getElementById('step-' + currentStep).classList.remove('active');
+
+  if (dir === 1) {
+    document.querySelector(`.step-dot[data-step="${currentStep}"]`).classList.add('completed');
+  } else {
+    document.querySelector(`.step-dot[data-step="${currentStep - 1}"]`).classList.remove('completed');
+  }
+
+  currentStep += dir;
+  document.getElementById('step-' + currentStep).classList.add('active');
+
+  document.querySelectorAll('.step-dot').forEach(d => {
+    d.classList.remove('active');
+    if (parseInt(d.getAttribute('data-step')) === currentStep) d.classList.add('active');
+  });
+
+  document.getElementById('progress-line').style.width = ((currentStep - 1) / (totalSteps - 1)) * 100 + '%';
+  document.getElementById('btn-prev').style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+
+  if (currentStep === totalSteps) {
+    document.getElementById('btn-next').style.display = 'none';
+    document.getElementById('btn-create').style.display = 'inline-flex';
+  } else {
+    document.getElementById('btn-next').style.display = 'inline-flex';
+    document.getElementById('btn-create').style.display = 'none';
+  }
+}
+
+async function submitForm() {
+  const btn = document.getElementById('btn-create');
+  const resultBox = document.getElementById('api-result');
+  btn.innerHTML = 'Creating...';
+  btn.disabled = true;
+  resultBox.style.display = 'none';
+
+  const wizardData = {
+    business_name: document.getElementById('biz-name').value.trim(),
+    business_url: document.getElementById('biz-url').value.trim() || null,
+    industry: document.getElementById('biz-industry').value,
+    plan: document.getElementById('biz-plan').value,
+    avatar_name: document.getElementById('avatar-name').value.trim(),
+    voice_id: document.getElementById('avatar-voice').value,
+    welcome_message: document.getElementById('avatar-welcome').value.trim(),
+    primary_color: selectedColor
+  };
+
+  try {
+    const response = await fetch(`${API_URL}/api/wizard/complete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(wizardData)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to create');
+    }
+
+    const data = await response.json();
+    
+    resultBox.innerHTML = `
+      <span style="color:var(--green)">✓ Success! Your AI assistant has been created.</span><br><br>
+      <span style="color:var(--muted)">Business: </span><span style="color:var(--amber)">${wizardData.business_name}</span><br>
+      <span style="color:var(--muted)">Avatar: </span><span style="color:var(--amber)">${wizardData.avatar_name}</span><br><br>
+      Redirecting to your dashboard...
+    `;
+    resultBox.style.cssText = 'display:block;margin-top:20px;padding:16px;background:var(--green-d);border:1px solid var(--green);color:var(--text);font-size:13px;';
+    btn.innerHTML = '✓ Launching...';
+
+    setTimeout(() => {
+      window.location.href = 'humana-dashboard.html';
+    }, 1500);
+  } catch (error) {
+    resultBox.innerHTML = `<span style="color:var(--red)">✗ Error: ${error.message}</span>`;
+    resultBox.style.cssText = 'display:block;margin-top:20px;padding:16px;background:#ef444422;border:1px solid var(--red);';
+    btn.innerHTML = 'Try Again →';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

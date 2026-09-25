@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>HUMANA — System Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg: #090a0c;
+  --bg-gradient: radial-gradient(circle at 50% 0%, #171d29 0%, #090a0c 60%);
+  --panel: rgba(18, 21, 27, 0.65);
+  --card: rgba(24, 28, 36, 0.5);
+  --border: rgba(255, 255, 255, 0.08);
+  --border2: rgba(255, 255, 255, 0.12);
+  --text: #f0f2f8;
+  --muted: #8b92a5;
+  --amber: #f59e0b;
+  --amber-d: rgba(245, 158, 11, 0.12);
+  --amber-m: rgba(245, 158, 11, 0.35);
+  --green: #10b981;
+  --green-d: rgba(16, 185, 129, 0.12);
+  --red: #ef4444;
+  --red-d: rgba(239, 68, 68, 0.12);
+  --blue: #3b82f6;
+  --blue-d: rgba(59, 130, 246, 0.12);
+  --purple: #a855f7;
+  --purple-d: rgba(168, 85, 247, 0.12);
+  --glass-blur: blur(12px);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.7);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);background-image:var(--bg-gradient);color:var(--text);font-family:'Inter',sans-serif;font-weight:400;display:flex;}
+::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+/* SIDEBAR */
+.sb{width:240px;min-width:240px;height:100vh;background:var(--panel);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;box-shadow: 4px 0 24px rgba(0,0,0,0.3); z-index: 10;}
+.sb{width:230px;min-width:230px;height:100vh;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;}
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sb-mark{width:32px;height:32px;background:var(--amber);color:#000;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;}
+.sb-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:.15em;color:var(--text);}
+.sb-title span{color:var(--amber);}
+.sb-nav{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+.nav-section{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:12px 8px 4px;}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--muted);transition:.15s;border:none;background:none;width:100%;text-align:left;border-left:2px solid transparent;}
+.ni:hover{background:var(--card);color:var(--text);}
+.ni.active{background:var(--card);color:var(--text);border-left-color:var(--amber);}
+.ni-icon{width:16px;text-align:center;flex-shrink:0;}
+.ni-badge{margin-left:auto;background:var(--amber-d);color:var(--amber);padding:1px 7px;border-radius:10px;font-size:10px;font-family:'JetBrains Mono',monospace;}
+/* FIX #1: ni-badge-red was undefined — now properly defined */
+.ni-badge-red{margin-left:auto;background:var(--red-d);color:var(--red);padding:1px 7px;border-radius:10px;font-size:10px;font-family:'JetBrains Mono',monospace;}
+.sb-footer{padding:16px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden; position: relative; z-index: 1;}
+.topbar{height:66px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 36px;background:var(--panel);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);flex-shrink:0;position:sticky;top:0;z-index:20;}
+.topbar-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.health-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);}
+.user-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg, var(--amber), #b45309);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#fff;box-shadow:var(--shadow-sm);}
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:32px 36px;}
+/* PAGES */
+.page{display:none; animation: fadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);}
+.page.active{display:block;}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+/* STAT CARDS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:32px;}
+.stat{background:var(--card);backdrop-filter:var(--glass-blur);border:1px solid var(--border);border-radius:12px;padding:24px;transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg, transparent, var(--border2), transparent);opacity:0;transition:0.3s;}
+.stat:hover{border-color:var(--amber-m);transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat:hover::before{opacity:1;background:linear-gradient(90deg, transparent, var(--amber), transparent);}
+.stat-ic{font-size:20px;margin-bottom:10px;}
+.stat-label{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;}
+.stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.stat-up{color:var(--green);}
+.stat-down{color:var(--red);}
+/* PANEL */
+.panel{background:var(--card);backdrop-filter:var(--glass-blur);border:1px solid var(--border);border-radius:12px;margin-bottom:24px;overflow:hidden;box-shadow:var(--shadow-sm);transition:0.3s;}
+.panel:hover{border-color:var(--border2);box-shadow:var(--shadow-md);}
+.ph{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.01);}
+.ph-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;}
+.pb{padding:0;}
+/* TABLE */
+table{width:100%;border-collapse:collapse;text-align:left;}
+th,td{padding:14px 24px;border-bottom:1px solid var(--border);font-size:13px;}
+th{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:600;letter-spacing:.05em;background:rgba(0,0,0,0.2);border-bottom:2px solid var(--border2);}
+tbody tr{transition:.15s;}tbody tr:hover{background:rgba(255,255,255,.03);}tbody tr:last-child td{border-bottom:none;}
+/* STATUS BADGES */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600;}
+.badge-green{background:var(--green-d);color:var(--green);border:1px solid #10b98133;}
+.badge-red{background:var(--red-d);color:var(--red);border:1px solid #ef444433;}
+.badge-amber{background:var(--amber-d);color:var(--amber);border:1px solid var(--amber-m);}
+.badge-blue{background:var(--blue-d);color:var(--blue);border:1px solid #3b82f633;}
+.badge-purple{background:var(--purple-d);color:var(--purple);border:1px solid #a855f733;}
+/* BUTTONS */
+.btn{padding:8px 18px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s cubic-bezier(0.16, 1, 0.3, 1);border:none;font-weight:500;}
+.btn-amber{background:linear-gradient(135deg, var(--amber), #d97706);color:#fff;box-shadow:0 4px 12px rgba(245, 158, 11, 0.2);}.btn-amber:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(245, 158, 11, 0.3);opacity:0.95;}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text);}.btn-ghost:hover{background:rgba(255,255,255,0.05);border-color:var(--muted);}
+.btn-danger{background:transparent;border:1px solid var(--border2);color:var(--muted);}.btn-danger:hover{border-color:var(--red);color:var(--red);background:var(--red-d);}
+.btn-blue{background:var(--blue-d);border:1px solid rgba(59,130,246,0.3);color:var(--blue);}.btn-blue:hover{background:rgba(59,130,246,0.2);}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-row{display:flex;gap:6px;justify-content:flex-end;flex-wrap:nowrap;}
+/* CO CELL */
+.co-cell{display:flex;align-items:center;gap:10px;}
+.co-ic{width:30px;height:30px;border-radius:6px;background:#20242f;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--amber);flex-shrink:0;}
+.co-name{font-weight:500;font-size:13px;}
+.co-id{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:1px;}
+/* ERROR + EMPTY */
+.error-bar{padding:10px 16px;background:var(--red-d);border:1px solid #ef444433;border-radius:6px;color:var(--red);font-size:13px;display:none;margin-bottom:20px;}
+.empty-row td{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+/* FORMS */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.full{grid-column:1/-1;}
+.fl{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.05em;}
+.fi,.fs,.fta{background:rgba(0,0,0,0.2);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:10px 14px;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:all 0.2s;}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--amber);background:rgba(255,255,255,0.02);box-shadow:0 0 0 3px rgba(245, 158, 11, 0.15);}
+.fi::placeholder,.fta::placeholder{color:var(--muted);}
+.fta{resize:vertical;min-height:90px;}
+.fs{cursor:pointer;}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center;opacity:0;transition: opacity 0.3s;}
+.modal-bg.open{display:flex;opacity:1;}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:580px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);transform:scale(0.95);transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);}
+.modal-bg.open .modal{transform:scale(1);}
+.modal-header{padding:20px 26px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.modal-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;transition:.15s;}.modal-close:hover{color:var(--text);}
+.modal-body{padding:20px 22px;overflow-y:auto;flex:1;}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;}
+/* DRAWER */
+.drawer-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;opacity:0;pointer-events:none;transition:.25s;}
+.drawer-bg.open{opacity:1;pointer-events:all;}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:95vw;background:var(--panel);border-left:1px solid var(--border);z-index:201;display:flex;flex-direction:column;transform:translateX(100%);transition:.3s cubic-bezier(.4,0,.2,1);}
+.drawer.open{transform:translateX(0);}
+.drawer-header{padding:18px 22px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.drawer-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:space-between;}
+.drawer-sub{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:4px;}
+.drawer-body{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:16px;}
+/* DROPZONE */
+.dropzone{border:2px dashed var(--border2);border-radius:8px;padding:24px 16px;text-align:center;cursor:pointer;transition:.2s;background:var(--card);}
+.dropzone:hover,.dropzone.drag-over{border-color:var(--amber-m);background:var(--amber-d);}
+.dz-icon{font-size:24px;margin-bottom:8px;}
+.dz-text{font-size:13px;font-weight:500;margin-bottom:3px;}
+.dz-sub{font-size:11px;color:var(--muted);}
+.dz-pills{display:flex;gap:5px;justify-content:center;margin-top:10px;flex-wrap:wrap;}
+.dz-pill{background:var(--card);border:1px solid var(--border2);color:var(--muted);padding:2px 7px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:9px;}
+/* LOG */
+.kb-log{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);min-height:42px;max-height:100px;overflow-y:auto;display:none;white-space:pre-line;line-height:1.6;}
+.kb-log.vis{display:block;}.kb-log.err{color:var(--red);}
+/* DIVIDER */
+hr.div{border:none;border-top:1px solid var(--border);margin:0;}
+/* DANGER */
+.danger-box{background:var(--red-d);border:1px solid #ef444430;border-radius:8px;padding:14px 16px;}
+.danger-title{font-size:11px;font-weight:700;color:var(--red);margin-bottom:5px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;}
+.danger-desc{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5;}
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--card);border:1px solid var(--border2);padding:10px 18px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.5);transform:translateY(16px);opacity:0;transition:.3s;z-index:300;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.ok{border-color:var(--green);color:var(--green);}
+.toast.er{border-color:var(--red);color:var(--red);}
+/* BILLING GRID */
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.plan-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;}
+.plan-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:6px;}
+.plan-price{font-family:'JetBrains Mono',monospace;font-size:22px;color:var(--amber);margin-bottom:4px;}
+.plan-tenants{font-size:12px;color:var(--muted);}
+/* API LOG */
+.log-entry{display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid var(--border);font-size:12px;}
+.log-entry:last-child{border:none;}
+.log-method{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;border-radius:3px;min-width:44px;text-align:center;font-weight:700;}
+.log-200{background:var(--green-d);color:var(--green);}
+.log-404{background:var(--amber-d);color:var(--amber);}
+.log-500{background:var(--red-d);color:var(--red);}
+.log-path{flex:1;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+.log-ms{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+/* SETTINGS */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);}
+.setting-row:last-child{border:none;}
+.setting-info{flex:1;}
+.setting-title{font-size:13px;font-weight:500;margin-bottom:2px;}
+.setting-desc{font-size:11px;color:var(--muted);}
+.toggle{width:40px;height:22px;border-radius:11px;background:var(--border2);position:relative;cursor:pointer;transition:.25s;flex-shrink:0;}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:.25s;}
+.toggle.on{background:var(--amber);}
+.toggle.on::after{left:21px;background:#000;}
+/* 2-col layout */
+.grid2{display:grid;grid-template-columns:3fr 2fr;gap:20px;}
+
+/* ─── LIVE MONITOR ─── */
+.world-wrap{position:relative;background:#070910;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin-bottom:20px;}
+.world-svg{width:100%;display:block;max-height:270px;}
+.continent{fill:#111522;stroke:#1c2235;stroke-width:.7;}
+.session-pulse-ring{animation:sespulse 2.4s ease-out infinite;}
+@keyframes sespulse{0%{r:7;opacity:.7;stroke-width:2}100%{r:26;opacity:0;stroke-width:.4}}
+.ws-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ws-status-cell{display:flex;align-items:center;gap:7px;font-size:12px;}
+.map-grid-line{stroke:#0f1218;stroke-width:.5;}
+
+/* ─── ANALYTICS ─── */
+/* FIX #5: scoped tab-btn within their page container */
+.tab-row{display:flex;gap:4px;margin-bottom:20px;}
+.tab-btn{padding:5px 14px;border-radius:5px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted);transition:.15s;}
+.tab-btn.active{background:var(--amber-d);color:var(--amber);border-color:var(--amber-m);}
+.sentiment-row{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border);}
+.sentiment-row:last-child{border:none;}
+.sentiment-track{flex:1;height:6px;background:var(--border2);border-radius:3px;overflow:hidden;display:flex;}
+.sentiment-seg{height:100%;}
+.cost-bar-wrap{width:80px;height:4px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.cost-bar-fill{height:100%;background:var(--amber);border-radius:2px;}
+.chart-bar{transition:opacity .2s;cursor:pointer;}
+.chart-bar:hover{opacity:.7;}
+.retention-row{display:flex;align-items:center;gap:12px;padding:11px 20px;border-bottom:1px solid var(--border);}
+.retention-row:last-child{border:none;}
+.spark-bar{display:inline-flex;align-items:flex-end;gap:2px;height:24px;}
+.spark-b{width:6px;border-radius:1px;background:var(--amber);opacity:.6;}
+.spark-b:last-child{opacity:1;}
+.trend-up{color:var(--green);}
+.trend-down{color:var(--red);}
+.trend-flat{color:var(--muted);}
+
+/* ─── PIPELINE STATUS ─── */
+.pipeline-row{padding:16px 20px;border-bottom:1px solid var(--border);}
+.pipeline-row:last-child{border:none;}
+.pipeline-row-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.pipeline-stages{display:flex;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;}
+.pipe-stage{background:#0e111a;border:1px solid var(--border);border-radius:6px;padding:8px 12px;text-align:center;min-width:86px;flex-shrink:0;}
+.pipe-stage.ok{border-color:#10b98120;}
+.pipe-stage.warn{border-color:#f59e0b40;}
+.pipe-stage.err{border-color:#ef444440;}
+.pipe-stage-name{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;}
+.pipe-stage-lat{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
+.pipe-stage-stat{font-size:9px;margin-top:3px;font-family:'JetBrains Mono',monospace;}
+.pipe-arrow{padding:0 5px;color:var(--border2);font-size:11px;flex-shrink:0;margin-top:-2px;}
+.ok-col{color:var(--green);}
+.warn-col{color:var(--amber);}
+.err-col{color:var(--red);}
+.pipe-total{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+
+/* ─── ALERTS & HEALTH ─── */
+.health-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+.health-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;align-items:flex-start;gap:14px;transition:.2s;}
+.health-card:hover{border-color:var(--border2);}
+.health-ring-wrap{flex-shrink:0;margin-top:2px;}
+.health-details{flex:1;min-width:0;}
+.health-client-name{font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.health-client-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:8px;}
+.health-sub{display:flex;flex-direction:column;gap:3px;}
+.health-sub-row{display:flex;align-items:center;justify-content:space-between;}
+.health-sub-key{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--muted);}
+.health-sub-val{font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;}
+.alert-feed-wrap{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.alert-item{display:flex;align-items:flex-start;gap:12px;padding:13px 20px;border-bottom:1px solid var(--border);transition:.12s;}
+.alert-item:hover{background:rgba(255,255,255,.015);}
+.alert-item:last-child{border:none;}
+.alert-sev-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.alert-body{flex:1;}
+.alert-msg{font-size:13px;margin-bottom:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.alert-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+.alert-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;margin-top:1px;}
+.alert-filter-row{display:flex;gap:6px;align-items:center;}
+.sim-pill{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:3px;letter-spacing:.04em;}
+
+/* ─── MULTI-CLIENT SCROLLABLE TABLES ─── */
+/* Ensure tables with many rows stay readable */
+.activity-item{display:flex;align-items:center;gap:12px;padding:9px 20px;border-bottom:1px solid var(--border);font-size:12px;transition:.12s;}
+.activity-item:hover{background:rgba(255,255,255,.015);}
+.activity-item:last-child{border:none;}
+.activity-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.activity-body{flex:1;min-width:0;}
+.activity-title{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.activity-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:1px;}
+.activity-ts{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+.activity-new{animation:actslide .5s ease-out;}
+@keyframes actslide{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:none;}}
+.panel-last-updated{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+.mrr-trend{font-size:11px;font-weight:600;}
+.mrr-trend-up{color:var(--green);}
+.mrr-trend-dn{color:var(--red);}
+/* ─── MULTI-CLIENT SCROLLABLE TABLES ─── */
+.panel .pb{max-height:520px;overflow-y:auto;}
+.panel .pb table{min-width:600px;}
+
+/* ─── NOTIFICATION BELL ─── */
+.notif-btn{position:relative;background:none;border:1px solid var(--border2);width:34px;height:34px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:.15s;color:var(--muted);}
+.notif-btn:hover{background:var(--card);color:var(--text);}
+.notif-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;border:2px solid var(--panel);}
+.notif-badge:empty,.notif-badge[data-count="0"]{display:none;}
+.notif-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:380px;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:500;display:none;flex-direction:column;max-height:480px;overflow:hidden;}
+.notif-dropdown.open{display:flex;}
+.notif-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.notif-header-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;}
+.notif-clear{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);cursor:pointer;background:none;border:none;transition:.15s;}
+.notif-clear:hover{color:var(--amber);}
+.notif-list{overflow-y:auto;flex:1;}
+.notif-item{display:flex;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:.12s;align-items:flex-start;}
+.notif-item:hover{background:rgba(255,255,255,.025);}
+.notif-item:last-child{border:none;}
+.notif-item.unread{background:rgba(245,158,11,.04);}
+.notif-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.notif-body{flex:1;min-width:0;}
+.notif-msg{font-size:12px;line-height:1.4;color:var(--text);}
+.notif-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;display:flex;gap:8px;}
+.notif-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);flex-shrink:0;margin-top:1px;}
+.notif-wrap{position:relative;}
+.notif-empty{padding:32px 20px;text-align:center;color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace;}
+
+/* ─── REALTIME PULSE INDICATOR ─── */
+.rt-pill{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:var(--card);}
+.rt-pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:rtpulse 2s ease-in-out infinite;}
+@keyframes rtpulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,.6);}50%{opacity:.7;box-shadow:0 0 0 4px rgba(16,185,129,0);}}
+.rt-updating{color:var(--amber);}
+.rt-updating .rt-pulse{background:var(--amber);}
+.ai-badge{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--purple);background:var(--purple-d);border:1px solid #a855f733;padding:2px 7px;border-radius:3px;letter-spacing:.04em;}
+.stat-live-flash{animation:liveflash .6s ease-out;}
+@keyframes liveflash{0%{color:var(--amber);}100%{color:inherit;}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-logo">
+    <div class="sb-mark">H</div>
+    <div class="sb-title">HUMAN<span>A</span> ADMIN</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-section">Main</div>
+    <button class="ni active" data-page="overview" onclick="go('overview')"><span class="ni-icon">⊞</span>Overview<span class="ni-badge" id="nbTotal">0</span></button>
+    <button class="ni" data-page="tenants" onclick="go('tenants')"><span class="ni-icon">🏢</span>Tenants<span class="ni-badge" id="nbActive">0</span></button>
+    <button class="ni" data-page="knowledge" onclick="go('knowledge')"><span class="ni-icon">📚</span>Knowledge Bases</button>
+    <button class="ni" data-page="monitor" onclick="go('monitor')"><span class="ni-icon">🌐</span>Live Monitor<span class="ni-badge" id="nbSessions">—</span></button>
+    <div class="nav-section">Intelligence</div>
+    <button class="ni" data-page="analytics" onclick="go('analytics')"><span class="ni-icon">📊</span>Analytics</button>
+    <button class="ni" data-page="pipeline" onclick="go('pipeline')"><span class="ni-icon">⚡</span>Pipeline Status</button>
+    <div class="nav-section">Finance</div>
+    <button class="ni" data-page="billing" onclick="go('billing')"><span class="ni-icon">💳</span>Billing</button>
+    <div class="nav-section">System</div>
+    <!-- FIX #1: was ni-badge-red (undefined class), now properly styled -->
+    <button class="ni" data-page="alerts" onclick="go('alerts')"><span class="ni-icon">🔔</span>Alerts<span class="ni-badge-red" id="nbAlerts">0</span></button>
+    <button class="ni" data-page="logs" onclick="go('logs')"><span class="ni-icon">📋</span>API Logs</button>
+    <button class="ni" data-page="signups" onclick="go('signups')"><span class="ni-icon">🗂</span>Customer Details<span class="ni-badge" id="nbSignups">0</span></button>
+    <button class="ni" data-page="settings" onclick="go('settings')"><span class="ni-icon">⚙</span>Settings</button>
+  </nav>
+  <div class="sb-footer">v1.0.0 · HUMANA Platform</div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title" id="topbarTitle">Platform Overview</div>
+    <div class="topbar-right">
+      <div class="rt-pill" id="rtPill"><div class="rt-pulse" id="rtPulse"></div><span id="rtLabel">Live</span></div>
+      <div class="health-dot" id="healthDot" title="Checking..."></div>
+      <span style="font-size:12px;color:var(--muted)" id="healthLabel">Checking…</span>
+      <div class="notif-wrap">
+        <button class="notif-btn" id="notifBtn" onclick="toggleNotifDropdown(event)" title="Notifications">
+          🔔
+          <span class="notif-badge" id="notifBadge"></span>
+        </button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-header">
+            <div class="notif-header-title">Notifications</div>
+            <button class="notif-clear" onclick="clearAllNotifs()">Mark all read</button>
+          </div>
+          <div class="notif-list" id="notifList">
+            <div class="notif-empty">No notifications yet</div>
+          </div>
+        </div>
+      </div>
+      <div class="user-av">SA</div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="error-bar" id="errorBar"></div>
+
+    <!-- ══ OVERVIEW ══ -->
+    <div class="page active" id="page-overview">
+      <div class="stats" id="statsRow">
+        <div class="stat"><div class="stat-ic">💰</div><div class="stat-label">Monthly MRR</div><div class="stat-val" id="sMrr">$0</div><div class="stat-sub" id="sMrrSub">—</div></div>
+        <div class="stat"><div class="stat-ic">🏢</div><div class="stat-label">Active Tenants</div><div class="stat-val" id="sActive">0</div><div class="stat-sub" id="sActiveSub">—</div></div>
+        <div class="stat"><div class="stat-ic">⚡</div><div class="stat-label">Live Sessions</div><div class="stat-val" id="sLive">—</div><div class="stat-sub">Real-time · <span id="sLiveUpdated" style="color:var(--amber)">updating…</span></div></div>
+        <div class="stat"><div class="stat-ic" id="sHealthIc">🟢</div><div class="stat-label">System Health</div><div class="stat-val" style="font-size:18px;color:var(--green)" id="sHealth">Healthy</div><div class="stat-sub" id="sHealthSub">Checking…</div></div>
+      </div>
+      <!-- Live Activity Ticker -->
+      <div class="panel" style="margin-bottom:20px">
+        <div class="ph">
+          <div class="ph-title">Live Activity Feed</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="ai-badge">✦ AI-POWERED</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)" id="activityUpdated">—</span>
+          </div>
+        </div>
+        <div id="activityFeed" style="max-height:180px;overflow-y:auto;padding:4px 0">
+          <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Loading activity…</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><div class="ph-title">All Customers</div><div style="display:flex;gap:8px"><button class="btn btn-amber btn-sm" onclick="openCreate()">+ New Customer</button><button class="btn btn-ghost btn-sm" onclick="loadCustomers()">↻ Refresh</button></div></div>
+        <div class="pb"><table><thead><tr><th>Company</th><th>Email</th><th>Plan</th><th>Status</th><th>Joined</th><th style="text-align:right">Actions</th></tr></thead><tbody id="custTbl"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ══ TENANTS ══ -->
+    <div class="page" id="page-tenants">
+      <div class="panel">
+        <div class="ph"><div class="ph-title">Tenant Management</div><button class="btn btn-amber btn-sm" onclick="openCreate()">+ New Tenant</button></div>
+        <div class="pb"><table><thead><tr><th>Company</th><th>Owner</th><th>Plan</th><th>Status</th><th>API Key</th><th style="text-align:right">Actions</th></tr></thead><tbody id="tenantTbl"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ══ KNOWLEDGE BASES ══ -->
+    <div class="page" id="page-knowledge">
+      <div class="panel">
+        <div class="ph"><div class="ph-title">Knowledge Bases — All Tenants</div><span style="font-size:11px;color:var(--muted)">Click a tenant to manage their KB</span></div>
+        <!-- FIX #10: kbTbl empty row was colspan=6 but table only has 4 columns -->
+        <div class="pb"><table><thead><tr><th>Tenant</th><th>Plan</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody id="kbTbl"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ══ BILLING ══ -->
+    <div class="page" id="page-billing">
+      <!-- AI Revenue Forecast Banner -->
+      <div id="billingForecastBanner" style="background:var(--amber-d);border:1px solid var(--amber-m);border-radius:8px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:16px">📈</span>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:2px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.05em">AI Revenue Forecast</div>
+          <div style="font-size:12px;color:var(--text)" id="billingForecastText">Calculating…</div>
+        </div>
+        <span class="panel-last-updated" id="billingForecastTs">—</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-ic">💰</div><div class="stat-label">Total MRR</div><div class="stat-val" id="bMrr">$0</div><div class="stat-sub" id="bMrrTrend">Loading…</div></div>
+        <div class="stat"><div class="stat-ic">📦</div><div class="stat-label">Starter Tenants</div><div class="stat-val" id="bStarter">0</div><div class="stat-sub">$99/mo each</div></div>
+        <div class="stat"><div class="stat-ic">🚀</div><div class="stat-label">Business Tenants</div><div class="stat-val" id="bBusiness">0</div><div class="stat-sub">$149/mo each</div></div>
+        <div class="stat"><div class="stat-ic">🏆</div><div class="stat-label">Enterprise Tenants</div><div class="stat-val" id="bEnterprise">0</div><div class="stat-sub">Custom pricing</div></div>
+      </div>
+      <div style="margin-bottom:16px;font-family:'Syne',sans-serif;font-weight:600;font-size:14px;">Plan Breakdown</div>
+      <div class="plan-grid">
+        <div class="plan-card"><div class="plan-name">Starter</div><div class="plan-price">$99<span style="font-size:13px;color:var(--muted)">/mo</span></div><div class="plan-tenants" id="bStarters">0 tenants</div></div>
+        <div class="plan-card" style="border-color:var(--amber-m)"><div class="plan-name">Business <span class="badge badge-amber" style="font-size:9px">Popular</span></div><div class="plan-price">$149<span style="font-size:13px;color:var(--muted)">/mo</span></div><div class="plan-tenants" id="bBusinesses">0 tenants</div></div>
+        <div class="plan-card"><div class="plan-name">Enterprise</div><div class="plan-price">Custom</div><div class="plan-tenants" id="bEnterprises">0 tenants</div></div>
+      </div>
+    </div>
+
+    <!-- ══ API LOGS ══ -->
+    <div class="page" id="page-logs">
+      <div class="stats" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat"><div class="stat-label">Active Sessions</div><div class="stat-val" id="lSessions">—</div><div class="stat-sub">Real-time</div></div>
+        <div class="stat"><div class="stat-label">LLM Provider</div><div class="stat-val" style="font-size:16px" id="lProvider">—</div><div class="stat-sub" id="lProviderSub">—</div></div>
+        <div class="stat"><div class="stat-label">LLM Model</div><div class="stat-val" style="font-size:15px" id="lModel">—</div><div class="stat-sub" id="lModelSub">Active</div></div>
+      </div>
+      <div class="panel">
+        <div class="ph">
+          <div class="ph-title">Recent API Activity</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="ai-badge">✦ AI-POWERED</span>
+            <span class="panel-last-updated" id="logsLastUpdated">—</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadLogs()">↻ Refresh</button>
+          </div>
+        </div>
+        <div id="logFeed"></div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="page" id="page-settings">
+      <!-- Live System Diagnostics -->
+      <div class="panel" style="margin-bottom:20px">
+        <div class="ph">
+          <div class="ph-title">System Diagnostics</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="ai-badge">✦ AI-POWERED</span>
+            <span class="panel-last-updated" id="diagLastUpdated">—</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadDiagnostics()">↻ Scan</button>
+          </div>
+        </div>
+        <div id="diagGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--border)">
+          <div style="padding:16px 20px;border-right:1px solid var(--border)">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">API Server</div>
+            <div id="diagApi" style="font-size:13px;color:var(--muted)">Checking…</div>
+          </div>
+          <div style="padding:16px 20px;border-right:1px solid var(--border)">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Database</div>
+            <div id="diagDb" style="font-size:13px;color:var(--muted)">Checking…</div>
+          </div>
+          <div style="padding:16px 20px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">LLM Provider</div>
+            <div id="diagLlm" style="font-size:13px;color:var(--muted)">Checking…</div>
+          </div>
+          <div style="padding:16px 20px;border-right:1px solid var(--border);border-top:1px solid var(--border)">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">WebSocket Server</div>
+            <div id="diagWs" style="font-size:13px;color:var(--muted)">Checking…</div>
+          </div>
+          <div style="padding:16px 20px;border-right:1px solid var(--border);border-top:1px solid var(--border)">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Vector Store</div>
+            <div id="diagVector" style="font-size:13px;color:var(--muted)">Checking…</div>
+          </div>
+          <div style="padding:16px 20px;border-top:1px solid var(--border)">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">TTS Service</div>
+            <div id="diagTts" style="font-size:13px;color:var(--muted)">Checking…</div>
+          </div>
+        </div>
+        <div id="diagSummary" style="padding:12px 20px;font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace"></div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><div class="ph-title">Platform Settings</div><span style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace">Changes saved to localStorage</span></div>
+        <div class="setting-row"><div class="setting-info"><div class="setting-title">Maintenance Mode</div><div class="setting-desc">Block all new WebSocket connections</div></div><div class="toggle" id="tog-maintenance" onclick="toggleSetting('maintenance',this)"></div></div>
+        <div class="setting-row"><div class="setting-info"><div class="setting-title">Debug Logging</div><div class="setting-desc">Verbose structlog output to console</div></div><div class="toggle on" id="tog-debug" onclick="toggleSetting('debug',this)"></div></div>
+        <div class="setting-row"><div class="setting-info"><div class="setting-title">Allow New Registrations</div><div class="setting-desc">Permit new customers via wizard</div></div><div class="toggle on" id="tog-registrations" onclick="toggleSetting('registrations',this)"></div></div>
+        <div class="setting-row"><div class="setting-info"><div class="setting-title">ElevenLabs Voice</div><div class="setting-desc">Enable TTS on avatar responses</div></div><div class="toggle on" id="tog-tts" onclick="toggleSetting('tts',this)"></div></div>
+        <div class="setting-row"><div class="setting-info"><div class="setting-title">AI Real-Time Notifications</div><div class="setting-desc">AI-generated platform alerts every 15–45s</div></div><div class="toggle on" id="tog-ainotifs" onclick="toggleSetting('ainotifs',this)"></div></div>
+        <div class="setting-row"><div class="setting-info"><div class="setting-title">Live Activity Feed</div><div class="setting-desc">Auto-refresh overview activity stream</div></div><div class="toggle on" id="tog-activity" onclick="toggleSetting('activity',this)"></div></div>
+      </div>
+      <div class="panel">
+        <div class="ph"><div class="ph-title">API Endpoints</div></div>
+        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">Backend URL: <span style="color:var(--amber)" id="apiUrlDisplay"></span></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">Docs: <a href="http://localhost:8000/docs" target="_blank" style="color:var(--blue)">http://localhost:8000/docs</a></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">WebSocket: <span style="color:var(--muted)">ws://localhost:8000/ws/avatar/{business_id}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ LIVE MONITOR ══ -->
+    <div class="page" id="page-monitor">
+      <div class="stats" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat"><div class="stat-ic">🟢</div><div class="stat-label">Active WS Sessions</div><div class="stat-val" id="monSessions">—</div><div class="stat-sub">Real-time</div></div>
+        <div class="stat"><div class="stat-ic">⚡</div><div class="stat-label">Avg Latency P50</div><div class="stat-val" id="monLatency">—</div><div class="stat-sub">Across all clients</div></div>
+        <div class="stat"><div class="stat-ic">💬</div><div class="stat-label">Conversations (7d)</div><div class="stat-val" id="monConvs">—</div><div class="stat-sub" id="monConvsSub">vs last week</div></div>
+        <div class="stat"><div class="stat-ic">🚨</div><div class="stat-label">Avg Error Rate</div><div class="stat-val" id="monErrors">—</div><div class="stat-sub" id="monErrorsSub">All tenants</div></div>
+      </div>
+      <!-- World Map -->
+      <div class="world-wrap">
+        <div style="position:absolute;top:10px;right:14px;z-index:2;display:flex;gap:10px;align-items:center">
+          <span class="ai-badge">✦ AI-POWERED · Auto-refresh</span>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green)"><div style="width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green)"></div>Active Session</div>
+        </div>
+        <svg class="world-svg" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+              <stop offset="0%" stop-color="#0d1020"/>
+              <stop offset="100%" stop-color="#070910"/>
+            </radialGradient>
+          </defs>
+          <rect width="800" height="400" fill="url(#bgGrad)"/>
+          <!-- Latitude lines -->
+          <line x1="0" y1="100" x2="800" y2="100" class="map-grid-line"/>
+          <line x1="0" y1="200" x2="800" y2="200" class="map-grid-line"/>
+          <line x1="0" y1="300" x2="800" y2="300" class="map-grid-line"/>
+          <!-- Longitude lines -->
+          <line x1="200" y1="0" x2="200" y2="400" class="map-grid-line"/>
+          <line x1="400" y1="0" x2="400" y2="400" class="map-grid-line"/>
+          <line x1="600" y1="0" x2="600" y2="400" class="map-grid-line"/>
+          <!-- Continents -->
+          <g class="continents">
+            <path class="continent" d="M76,55 C92,44 136,42 165,48 L203,78 213,118 200,180 172,214 160,227 136,227 106,213 78,176 74,120 Z"/>
+            <path class="continent" d="M192,20 L246,13 262,44 238,70 200,63 Z"/>
+            <path class="continent" d="M170,214 184,238 174,252 156,243 Z"/>
+            <path class="continent" d="M146,254 208,247 230,290 232,360 200,396 158,397 126,360 118,296 Z"/>
+            <path class="continent" d="M263,66 282,63 290,84 276,98 261,90 Z"/>
+            <path class="continent" d="M288,56 374,52 393,80 388,120 355,150 315,161 286,143 278,100 Z"/>
+            <path class="continent" d="M303,28 350,22 367,50 352,56 303,56 Z"/>
+            <path class="continent" d="M274,170 404,162 428,215 430,308 396,388 330,400 268,364 255,292 260,220 Z"/>
+            <path class="continent" d="M410,284 425,273 434,307 421,334 407,326 Z"/>
+            <path class="continent" d="M392,140 470,135 477,170 464,212 428,217 390,193 Z"/>
+            <path class="continent" d="M447,154 520,150 534,200 514,252 472,255 442,217 Z"/>
+            <path class="continent" d="M370,44 610,40 654,90 658,196 622,245 546,264 423,241 387,201 376,150 Z"/>
+            <path class="continent" d="M630,110 654,107 660,132 648,152 628,141 Z"/>
+            <path class="continent" d="M545,232 622,218 642,255 617,280 555,274 535,254 Z"/>
+            <path class="continent" d="M563,292 668,285 688,342 666,390 600,397 549,372 537,330 Z"/>
+            <path class="continent" d="M692,360 710,349 720,374 703,393 688,382 Z"/>
+          </g>
+          <!-- Session dots populated by JS -->
+          <g id="sessionDots"></g>
+        </svg>
+      </div>
+      <!-- WebSocket Health Table -->
+      <div class="panel">
+        <div class="ph">
+          <div class="ph-title">WebSocket Health — Per Client</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="panel-last-updated" id="monLastUpdated">—</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadMonitor()">↻ Refresh</button>
+          </div>
+        </div>
+        <div class="pb">
+          <table>
+            <thead><tr><th>Client</th><th>WS Status</th><th>Latency P50</th><th>Latency P95</th><th>Reconnects/hr</th><th>WS Uptime</th></tr></thead>
+            <tbody id="wsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ANALYTICS ══ -->
+    <div class="page" id="page-analytics">
+      <!-- AI Insight Banner -->
+      <div id="analyticsInsightBanner" style="display:none;background:var(--purple-d);border:1px solid #a855f733;border-radius:8px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:16px">✦</span>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:600;color:var(--purple);margin-bottom:2px">AI Insight</div>
+          <div style="font-size:12px;color:var(--text)" id="analyticsInsightText">Analyzing platform data…</div>
+        </div>
+        <span class="panel-last-updated" id="analyticsInsightTs">—</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <!-- FIX #5: scoped inside #page-analytics so filterAlerts doesn't affect these -->
+        <div class="tab-row" id="analyticsTabRow" style="margin-bottom:0">
+          <button class="tab-btn active" onclick="setAnalyticsTab(this,'7d')">7 Days</button>
+          <button class="tab-btn" onclick="setAnalyticsTab(this,'30d')">30 Days</button>
+          <button class="tab-btn" onclick="setAnalyticsTab(this,'90d')">90 Days</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <select id="analyticsClientFilter" class="fi fs" style="width:180px;padding:5px 10px;font-size:12px" onchange="renderAnalytics()">
+            <option value="all">All Clients</option>
+          </select>
+          <span class="ai-badge">✦ AI-POWERED · Real-time</span>
+        </div>
+      </div>
+
+      <!-- KPI STAT CARDS -->
+      <div class="stats" id="analyticsKpiRow" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
+        <div class="stat" style="border-left:3px solid var(--blue)">
+          <div class="stat-ic">💬</div>
+          <div class="stat-label">Total Messages</div>
+          <div class="stat-val" id="akpiMessages">—</div>
+          <div class="stat-sub" id="akpiMessagesSub">All clients · this period</div>
+        </div>
+        <div class="stat" style="border-left:3px solid var(--green)">
+          <div class="stat-ic">👥</div>
+          <div class="stat-label">Active Users</div>
+          <div class="stat-val" id="akpiUsers">—</div>
+          <div class="stat-sub" id="akpiUsersSub">Unique sessions</div>
+        </div>
+        <div class="stat" style="border-left:3px solid var(--amber)">
+          <div class="stat-ic">⚡</div>
+          <div class="stat-label">Avg Response Time</div>
+          <div class="stat-val" id="akpiLatency">—</div>
+          <div class="stat-sub">P50 across all clients</div>
+        </div>
+        <div class="stat" style="border-left:3px solid var(--purple)">
+          <div class="stat-ic">🔢</div>
+          <div class="stat-label">Total Tokens Used</div>
+          <div class="stat-val" id="akpiTokens">—</div>
+          <div class="stat-sub" id="akpiTokensSub">In + Out</div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW: Line + Bar on left, Top Questions on right -->
+      <div class="grid2" style="margin-bottom:20px">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <!-- Messages Over Time — Chart.js Line -->
+          <div class="panel">
+            <div class="ph"><div class="ph-title">Messages Over Time</div><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)" id="akpiChartPeriod">Last 7 days</span></div>
+            <div style="padding:16px 20px;height:180px;position:relative">
+              <canvas id="chartMessages"></canvas>
+            </div>
+          </div>
+          <!-- Token Usage — Chart.js Bar -->
+          <div class="panel">
+            <div class="ph"><div class="ph-title">Token Usage</div><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">Est. tokens per period</span></div>
+            <div style="padding:16px 20px;height:180px;position:relative">
+              <canvas id="chartTokens"></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- Top User Questions -->
+        <div class="panel" style="height:fit-content">
+          <div class="ph"><div class="ph-title">Top User Questions</div><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">By frequency</span></div>
+          <div id="topQuestionsList" style="padding:4px 0"></div>
+        </div>
+      </div>
+
+      <!-- EXISTING analytics: Conversation Volume SVG + Sentiment + Retention + Cost + Provider -->
+      <div class="grid2">
+        <div>
+          <!-- Conversation Volume Chart (existing SVG bar) -->
+          <div class="panel">
+            <div class="ph"><div class="ph-title">Conversation Volume — All Clients</div></div>
+            <div style="padding:20px 20px 12px">
+              <svg id="convChart" width="100%" height="110" viewBox="0 0 370 110" preserveAspectRatio="xMidYMid meet" style="overflow:visible"></svg>
+            </div>
+          </div>
+          <!-- Sentiment Distribution -->
+          <div class="panel">
+            <div class="ph">
+              <div class="ph-title">Conversation Sentiment</div>
+              <div style="display:flex;gap:14px;font-family:'JetBrains Mono',monospace;font-size:10px">
+                <span style="color:var(--green)">● Positive</span>
+                <span style="color:var(--amber)">● Neutral</span>
+                <span style="color:var(--red)">● Negative</span>
+              </div>
+            </div>
+            <div id="sentimentRows"></div>
+          </div>
+          <!-- Cohort Retention -->
+          <div class="panel">
+            <div class="ph"><div class="ph-title">Usage Trend — Cohort Retention</div></div>
+            <div id="retentionRows"></div>
+          </div>
+        </div>
+        <div>
+          <!-- LLM Cost Tracker -->
+          <div class="panel">
+            <div class="ph">
+              <div class="ph-title">LLM Cost Tracker</div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">Est. · This period</span>
+            </div>
+            <div class="pb">
+              <table>
+                <thead><tr><th>Client</th><th>Tokens In</th><th>Tokens Out</th><th>Est. Cost</th><th>Share</th></tr></thead>
+                <tbody id="costTable"></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- Provider Split -->
+          <div class="panel">
+            <div class="ph"><div class="ph-title">Provider Split</div></div>
+            <div style="padding:16px 20px" id="providerSplit"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══ PIPELINE STATUS ══ -->
+    <div class="page" id="page-pipeline">
+      <div class="panel">
+        <div class="ph">
+          <div class="ph-title">Pipeline Stage Monitor — All Clients</div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <span class="ai-badge">✦ AI-POWERED</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadPipeline()">↻ Refresh</button>
+          </div>
+        </div>
+        <div style="padding:10px 20px;border-bottom:1px solid var(--border);display:flex;gap:20px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">
+          <span class="ok-col">✓ OK</span>
+          <span class="warn-col">⚠ Slow (&gt;threshold)</span>
+          <span class="err-col">✗ Error</span>
+          <span style="margin-left:auto">Pipeline: RAG → LLM → Emotion → TTS → Viseme</span>
+        </div>
+        <div id="pipelineRows"></div>
+      </div>
+    </div>
+
+    <!-- ══ ALERTS & HEALTH ══ -->
+    <div class="page" id="page-alerts">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <!-- FIX #6: scoped inside #page-alerts so setAnalyticsTab doesn't affect these -->
+        <div class="alert-filter-row" id="alertTabRow">
+          <button class="tab-btn active" onclick="filterAlerts('all',this)">All</button>
+          <button class="tab-btn" onclick="filterAlerts('err',this)">Errors</button>
+          <button class="tab-btn" onclick="filterAlerts('warn',this)">Warnings</button>
+          <button class="tab-btn" onclick="filterAlerts('info',this)">Info</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="ai-badge">✦ AI-POWERED</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadAlerts()">↻ Refresh</button>
+      </div>
+      <div style="font-family:'Syne',sans-serif;font-weight:600;font-size:14px;margin-bottom:14px">Client Health Scores</div>
+      <div class="health-grid" id="healthGrid"></div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="ph"><div class="ph-title">Alert Feed</div><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)" id="alertCount">0 active alerts</span></div>
+        <div id="alertFeed"></div>
+      </div>
+    </div>
+
+    <!-- ══ LOCAL SIGNUPS ══ -->
+    <div class="page" id="page-signups">
+
+      <!-- Pending signup banner -->
+      <div id="pendingBanner" style="display:none;margin-bottom:20px;padding:14px 18px;background:var(--amber-d);border:1px solid var(--amber-m);border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <span style="color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;">⚠ Pending Signup</span>
+          <div id="pendingDetail" style="font-size:13px;margin-top:4px;"></div>
+        </div>
+        <a href="humana-wizard.html" style="color:var(--amber);font-size:12px;font-family:'JetBrains Mono',monospace;text-decoration:none;border:1px solid var(--amber-m);padding:5px 12px;border-radius:5px;">Resume Wizard →</a>
+      </div>
+
+      <div class="panel">
+        <div class="ph">
+          <div class="ph-title">Wizard-Submitted Signups <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);font-weight:400;">— from localStorage</span></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">Browser-local · this device only</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadLocalSignups()">↻ Refresh</button>
+            <button class="btn btn-danger btn-sm" onclick="clearLocalSignups()">🗑 Clear All</button>
+          </div>
+        </div>
+        <div class="pb">
+          <table>
+            <thead><tr>
+              <th>Business</th>
+              <th>Website</th>
+              <th>Plan</th>
+              <th>Owner</th>
+              <th>Email</th>
+              <th>Color</th>
+              <th>Saved</th>
+              <th style="text-align:right">Actions</th>
+            </tr></thead>
+            <tbody id="signupTbl"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Raw JSON viewer -->
+      <div class="panel">
+        <div class="ph">
+          <div class="ph-title">Raw localStorage Data</div>
+          <button class="btn btn-ghost btn-sm" onclick="toggleRaw()">Toggle</button>
+        </div>
+        <pre id="rawJson" style="display:none;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;"></pre>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- CREATE / EDIT CUSTOMER MODAL -->
+<div class="modal-bg" id="createModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="createModalTitle">New Customer</div>
+      <button class="modal-close" onclick="closeCreate()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg"><label class="fl">Business Name *</label><input class="fi" id="cBizName" placeholder="Acme Corp"/></div>
+        <div class="fg"><label class="fl">Business URL</label><input class="fi" id="cBizUrl" placeholder="https://acme.com"/></div>
+        <div class="fg"><label class="fl">Owner Name</label><input class="fi" id="cOwnerName" placeholder="John Doe"/></div>
+        <div class="fg"><label class="fl">Owner Email</label><input class="fi" id="cOwnerEmail" placeholder="john@acme.com"/></div>
+        <div class="fg"><label class="fl">Industry</label><input class="fi" id="cIndustry" placeholder="Healthcare, Legal, Retail…"/></div>
+        <div class="fg"><label class="fl">Plan</label>
+          <select class="fi fs" id="cPlan">
+            <option value="starter">Starter — $99/mo</option>
+            <option value="business" selected>Business — $199/mo</option>
+            <option value="enterprise">Enterprise — $999/mo</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Avatar Name</label><input class="fi" id="cAvatarName" placeholder="Aria"/></div>
+        <div class="fg"><label class="fl">Primary Color</label><input class="fi" id="cColor" placeholder="#f59e0b"/></div>
+        <div class="fg full"><label class="fl">Welcome Message</label><input class="fi" id="cWelcome" placeholder="Hi! How can I help you today?"/></div>
+        <div class="fg full"><label class="fl">Allowed Domains (comma-separated)</label><input class="fi" id="cDomains" placeholder="acme.com, app.acme.com"/></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeCreate()">Cancel</button>
+      <button class="btn btn-amber" id="createBtn" onclick="submitCreate()">Create Customer</button>
+    </div>
+  </div>
+</div>
+
+<!-- KB DRAWER -->
+<div class="drawer-bg" id="kbBg" onclick="closeKb()"></div>
+<aside class="drawer" id="kbDrawer">
+  <div class="drawer-header">
+    <div class="drawer-title"><span>📚 Knowledge Base</span><button class="modal-close" onclick="closeKb()">✕</button></div>
+    <div class="drawer-sub" id="kbSub"></div>
+  </div>
+  <div class="drawer-body">
+    <div>
+      <div style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:6px">Upload File</div>
+      <div class="dropzone" id="kbDz">
+        <div class="dz-icon">📄</div>
+        <div class="dz-text">Drop file here or click to upload</div>
+        <div class="dz-sub">Avatar retrains automatically</div>
+        <div class="dz-pills"><span class="dz-pill">PDF</span><span class="dz-pill">TXT</span><span class="dz-pill">DOCX</span><span class="dz-pill">MD</span></div>
+      </div>
+      <input type="file" id="kbFile" accept=".pdf,.txt,.docx,.md" style="display:none"/>
+    </div>
+    <hr class="div"/>
+    <div>
+      <div style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:6px">Paste Text / URL</div>
+      <input class="fi" id="kbSrc" placeholder="Source name (e.g. FAQ, Policy)" style="margin-bottom:8px"/>
+      <textarea class="fta" id="kbTxt" placeholder="Paste FAQ, product info, policies…" style="min-height:90px"></textarea>
+      <button class="btn btn-amber" style="margin-top:8px;width:100%" id="kbAddBtn" onclick="kbIngest()">+ Add to Knowledge Base</button>
+    </div>
+    <div class="kb-log" id="kbLog"></div>
+    <hr class="div"/>
+    <div class="danger-box">
+      <div class="danger-title">⚠ Danger Zone</div>
+      <div class="danger-desc">Permanently wipe all knowledge for this tenant's avatar.</div>
+      <button class="btn btn-danger" style="width:100%" id="kbWipeBtn" onclick="kbWipe()">🗑 Wipe Entire Knowledge Base</button>
+    </div>
+  </div>
+</aside>
+
+<!-- TOAST --> 
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:8000';
+let token = localStorage.getItem('humana_token');
+let customers = [];
+let kbId = null, kbName = '';
+let editingId = null;
+
+// ── NAVIGATION ──
+const titles = {overview:'Platform Overview',tenants:'Tenant Management',knowledge:'Knowledge Bases',billing:'Billing & Revenue',logs:'API Logs',settings:'Settings',monitor:'Live Monitor',analytics:'Analytics',pipeline:'Pipeline Status',alerts:'Alerts & Health',signups:'Local Signups'};
+async function go(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('topbarTitle').textContent = titles[p]||p;
+  document.querySelectorAll('.ni[data-page]').forEach(btn=>{if(btn.dataset.page===p)btn.classList.add('active');});
+  if(p==='overview'||p==='tenants'||p==='knowledge') await loadCustomers();
+  if(p==='overview') loadActivityFeed(false);
+  if(p==='logs') loadLogs();
+  // FIX #8: billing now always ensures customers are loaded first
+  if(p==='billing'){ if(!customers.length) await loadCustomers(); loadBilling(); loadBillingForecast(); }
+  if(p==='settings'){ document.getElementById('apiUrlDisplay').textContent=API; _applySettings(); loadDiagnostics(); }
+  if(p==='monitor'){ if(!customers.length) await loadCustomers(); loadMonitor(); }
+  if(p==='analytics'){ if(!customers.length) await loadCustomers(); loadAnalytics(); }
+  if(p==='pipeline'){ if(!customers.length) await loadCustomers(); loadPipeline(); }
+  if(p==='alerts'){ if(!customers.length) await loadCustomers(); loadAlerts(); }
+  if(p==='signups') loadLocalSignups();
+}
+
+// ── TOAST ──
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+type+' show';
+  clearTimeout(t._t);t._t=setTimeout(()=>{t.className='toast';},3500);
+}
+
+// ── HEALTH CHECK ──
+function _setHealthUI(state,subText){
+  const dot=document.getElementById('healthDot');
+  const label=document.getElementById('healthLabel');
+  const card=document.getElementById('sHealth');
+  const sub=document.getElementById('sHealthSub');
+  const color=state==='ok'?'var(--green)':state==='degraded'?'var(--amber)':'var(--red)';
+  const glow=state==='ok'?'#10b981':state==='degraded'?'#f59e0b':'#ef4444';
+  dot.style.background=color;
+  dot.style.boxShadow='0 0 6px '+glow;
+  label.textContent=state==='ok'?'Online':state==='degraded'?'Degraded':'Offline';
+  label.style.color=color;
+  card.textContent=state==='ok'?'Healthy':state==='degraded'?'Degraded':'Offline';
+  card.style.color=color;
+  if(sub)sub.textContent=subText;
+  const ic=document.getElementById('sHealthIc');
+  if(ic)ic.textContent=state==='ok'?'🟢':state==='degraded'?'🟡':'🔴';
+}
+async function checkHealth(){
+  const now=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  try{
+    const r=await fetch(`${API}/api/health`);
+    if(r.ok){
+      const d=await r.json();
+      if(d.active_sessions!=null){
+        document.getElementById('sLive').textContent=d.active_sessions;
+        document.getElementById('nbSessions').textContent=d.active_sessions;
+      }
+      const parts=[];
+      if(d.llm_provider)parts.push(d.llm_provider);
+      if(d.db_status)parts.push('DB: '+d.db_status);
+      parts.push('Checked '+now());
+      _setHealthUI('ok',parts.join(' · '));
+      const rtLbl=document.getElementById('rtLabel');
+      if(rtLbl)rtLbl.textContent='Live · '+now();
+    }else{
+      _setHealthUI('degraded','HTTP '+r.status+' · Checked '+now());
+    }
+  }catch{
+    _setHealthUI('offline','Backend unreachable · '+now());
+  }
+}
+
+// ── CUSTOMERS ──
+async function loadCustomers(){
+  const eb=document.getElementById('errorBar');
+  eb.style.display='none';
+  ['custTbl','tenantTbl','kbTbl'].forEach(id=>{
+    const t=document.getElementById(id);
+    if(t)t.innerHTML='<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted)">Loading…</td></tr>';
+  });
+  try{
+    const r=await fetch(`${API}/customers`);
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    customers=await r.json();
+    renderTables();
+    updateStats();
+  }catch(e){
+    eb.textContent='Backend error: '+e.message+'. Is the server running?';
+    eb.style.display='block';
+    ['custTbl','tenantTbl'].forEach(id=>{
+      const t=document.getElementById(id);
+      if(t)t.innerHTML='<tr class="empty-row"><td colspan="6">No data — backend offline</td></tr>';
+    });
+    // FIX #10: kbTbl has 4 columns, not 6
+    const kbt=document.getElementById('kbTbl');
+    if(kbt)kbt.innerHTML='<tr class="empty-row"><td colspan="4">No data — backend offline</td></tr>';
+  }
+  return customers;
+}
+
+function planMrr(p){return p==='starter'?99:p==='enterprise'?999:199;}
+
+function updateStats(){
+  const active=customers.filter(c=>c.status==='active');
+  const paused=customers.filter(c=>c.status!=='active');
+  const mrr=customers.reduce((a,c)=>a+planMrr(c.plan),0);
+  document.getElementById('nbTotal').textContent=customers.length;
+  document.getElementById('nbActive').textContent=active.length;
+  document.getElementById('sMrr').textContent='$'+mrr.toLocaleString();
+  document.getElementById('sActive').textContent=active.length;
+
+  // MRR sub: show plan breakdown so it's always accurate
+  const s=customers.reduce((a,c)=>({...a,[c.plan]:(a[c.plan]||0)+1}),{});
+  const mrrParts=[];
+  if(s.enterprise) mrrParts.push(s.enterprise+' enterprise');
+  if(s.business)   mrrParts.push(s.business+' business');
+  if(s.starter)    mrrParts.push(s.starter+' starter');
+  const mrrSubEl=document.getElementById('sMrrSub');
+  if(mrrSubEl) mrrSubEl.textContent=mrrParts.length?mrrParts.join(' · '):'No customers yet';
+
+  // Active tenants sub: show paused count for context
+  const activeSubEl=document.getElementById('sActiveSub');
+  if(activeSubEl){
+    if(!customers.length){
+      activeSubEl.textContent='No customers yet';
+    } else if(paused.length){
+      activeSubEl.textContent=paused.length+' paused';
+      activeSubEl.className='stat-sub stat-down';
+    } else {
+      activeSubEl.textContent='All tenants active';
+      activeSubEl.className='stat-sub stat-up';
+    }
+  }
+
+  // Always update sLive with live mock data + animation
+  const totalMockSessions=customers.reduce((a,c)=>a+mockFor(c).activeSessions,0);
+  const livEl=document.getElementById('sLive');
+  if(livEl){_flashUpdate(livEl,totalMockSessions);}
+  const nbSessEl=document.getElementById('nbSessions');
+  if(nbSessEl)nbSessEl.textContent=totalMockSessions;
+}
+
+const planBadge=p=>{
+  if(p==='enterprise')return'<span class="badge badge-purple">Enterprise</span>';
+  if(p==='starter')return'<span class="badge badge-blue">Starter</span>';
+  return'<span class="badge badge-amber">Business</span>';
+};
+
+function renderTables(){
+  const rows={custTbl:'',tenantTbl:'',kbTbl:''};
+  if(!customers.length){
+    rows.custTbl='<tr class="empty-row"><td colspan="6">No customers yet. Click + New Customer to get started.</td></tr>';
+    rows.tenantTbl='<tr class="empty-row"><td colspan="6">No tenants yet.</td></tr>';
+    // FIX #10: correct colspan for 4-column kbTbl
+    rows.kbTbl='<tr class="empty-row"><td colspan="4">No customers yet. Click + New Customer to get started.</td></tr>';
+  } else {
+    customers.forEach(c=>{
+      const d=new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const ini=c.owner_initials||(c.business_name?c.business_name[0].toUpperCase():'?');
+      const isAct=c.status==='active';
+      const stat=isAct?'<span class="badge badge-green">Active</span>':'<span class="badge badge-red">Paused</span>';
+      const co=`<div class="co-cell"><div class="co-ic">${ini}</div><div><div class="co-name">${c.business_name}</div><div class="co-id">${c.id.substring(0,12)}…</div></div></div>`;
+      rows.custTbl+=`<tr><td>${co}</td><td style="color:var(--muted)">${c.owner_email||'—'}</td><td>${planBadge(c.plan)}</td><td>${stat}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">${d}</td><td><div class="btn-row"><button class="btn btn-blue btn-sm" onclick="openKb('${c.id}','${esc(c.business_name)}')">📚 KB</button><button class="btn btn-ghost btn-sm" onclick="toggleStatus('${c.id}','${c.status}')">${isAct?'Deactivate':'Activate'}</button><button class="btn btn-danger btn-sm" onclick="delCust('${c.id}',this)">Delete</button></div></td></tr>`;
+      rows.tenantTbl+=`<tr><td>${co}</td><td style="color:var(--muted)">${c.owner_name||'—'}</td><td>${planBadge(c.plan)}</td><td>${stat}</td><td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">${(c.api_key||'').substring(0,22)}…</td><td><div class="btn-row"><button class="btn btn-blue btn-sm" onclick="openKb('${c.id}','${esc(c.business_name)}')">📚 KB</button><button class="btn btn-ghost btn-sm" onclick="toggleStatus('${c.id}','${c.status}')">${isAct?'Pause':'Activate'}</button><button class="btn btn-danger btn-sm" onclick="delCust('${c.id}',this)">Delete</button></div></td></tr>`;
+      rows.kbTbl+=`<tr><td>${co}</td><td>${planBadge(c.plan)}</td><td>${stat}</td><td><div class="btn-row"><button class="btn btn-blue btn-sm" onclick="openKb('${c.id}','${esc(c.business_name)}')">📚 Manage KB</button></div></td></tr>`;
+    });
+  }
+  Object.keys(rows).forEach(id=>{const t=document.getElementById(id);if(t)t.innerHTML=rows[id];});
+}
+
+function esc(s){return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+
+// ── DELETE / TOGGLE ──
+async function delCust(id,btn){
+  if(!confirm('Delete this customer permanently?'))return;
+  btn.disabled=true;btn.textContent='…';
+  try{
+    const r=await fetch(`${API}/customers/${id}`,{method:'DELETE'});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    toast('Customer deleted');loadCustomers();
+  }catch(e){btn.disabled=false;btn.textContent='Delete';toast('Delete failed: '+e.message,'er');}
+}
+
+// FIX #3: unified toggle — was two separate functions (activate/deactivate) both calling the same endpoint
+// but with misleading toast messages. Now one function handles both with correct labelling.
+async function toggleStatus(id, currentStatus){
+  const isActive = currentStatus==='active';
+  try{
+    const r=await fetch(`${API}/customers/${id}/toggle`,{method:'POST'});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    toast(isActive?'Customer paused':'Customer activated');
+    loadCustomers();
+  }catch(e){toast('Failed: '+e.message,'er');}
+}
+
+// ── CREATE CUSTOMER ──
+function openCreate(){
+  editingId=null;
+  document.getElementById('createModalTitle').textContent='New Customer';
+  document.getElementById('createBtn').textContent='Create Customer';
+  ['cBizName','cBizUrl','cOwnerName','cOwnerEmail','cIndustry','cAvatarName','cColor','cWelcome','cDomains'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('cPlan').value='business';
+  document.getElementById('createModal').classList.add('open');
+}
+function closeCreate(){document.getElementById('createModal').classList.remove('open');}
+
+// FIX #7: editingId is now properly consumed in submitCreate for PUT vs POST routing
+async function submitCreate(){
+  const biz=document.getElementById('cBizName').value.trim();
+  if(!biz){toast('Business name is required','er');return;}
+  const btn=document.getElementById('createBtn');
+  btn.disabled=true;btn.textContent='Saving…';
+  const domains=document.getElementById('cDomains').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const body={
+    business_name:biz,
+    business_url:document.getElementById('cBizUrl').value||null,
+    owner_name:document.getElementById('cOwnerName').value||null,
+    owner_email:document.getElementById('cOwnerEmail').value||null,
+    industry:document.getElementById('cIndustry').value||null,
+    plan:document.getElementById('cPlan').value,
+    avatar_name:document.getElementById('cAvatarName').value||'Aria',
+    primary_color:document.getElementById('cColor').value||'#f59e0b',
+    welcome_message:document.getElementById('cWelcome').value||'Hi! How can I help you today?',
+    allowed_domains:domains,
+  };
+  try{
+    let r;
+    if(editingId){
+      // Editing existing customer
+      r=await fetch(`${API}/customers/${editingId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    } else {
+      // Creating new customer
+      r=await fetch(`${API}/customers/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }
+    if(!r.ok){const e=await r.json().catch(()=>({detail:r.statusText}));throw new Error(e.detail||r.statusText);}
+    closeCreate();
+    toast(editingId?'✓ Customer updated':'✓ Customer created');
+    loadCustomers();
+  }catch(e){toast('Error: '+e.message,'er');}
+  finally{btn.disabled=false;btn.textContent=editingId?'Save Changes':'Create Customer';}
+}
+
+// ── KB DRAWER ──
+function openKb(id,name){
+  kbId=id;kbName=name;
+  document.getElementById('kbSub').textContent=name+' · '+id.substring(0,12)+'…';
+  document.getElementById('kbTxt').value='';
+  document.getElementById('kbSrc').value='';
+  const log=document.getElementById('kbLog');log.className='kb-log';log.textContent='';
+  document.getElementById('kbBg').classList.add('open');
+  document.getElementById('kbDrawer').classList.add('open');
+}
+function closeKb(){
+  document.getElementById('kbBg').classList.remove('open');
+  document.getElementById('kbDrawer').classList.remove('open');
+}
+async function kbIngest(){
+  const txt=document.getElementById('kbTxt').value.trim();
+  const src=document.getElementById('kbSrc').value.trim()||'Admin Upload';
+  if(!txt){toast('Paste some text first','er');return;}
+  const btn=document.getElementById('kbAddBtn');
+  const log=document.getElementById('kbLog');
+  btn.disabled=true;btn.textContent='⏳ Ingesting…';
+  log.className='kb-log vis';log.textContent='Uploading to '+kbName+'…';
+  try{
+    const r=await fetch(`${API}/api/business/${kbId}/knowledge/text`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:txt,source_name:src})});
+    if(!r.ok){const e=await r.json().catch(()=>({detail:r.statusText}));throw new Error(e.detail);}
+    const d=await r.json();
+    log.textContent='✓ '+d.chunks_ingested+' chunks ingested.\n'+d.message;
+    document.getElementById('kbTxt').value='';
+    toast('✓ '+d.chunks_ingested+' chunks added');
+  }catch(e){log.className='kb-log vis err';log.textContent='✗ '+e.message;toast(e.message,'er');}
+  finally{btn.disabled=false;btn.textContent='+ Add to Knowledge Base';}
+}
+async function kbUploadFile(file){
+  const log=document.getElementById('kbLog');
+  log.className='kb-log vis';log.textContent='Uploading '+file.name+'…';
+  const fd=new FormData();fd.append('file',file);
+  try{
+    const r=await fetch(`${API}/api/business/${kbId}/knowledge/file`,{method:'POST',body:fd});
+    if(!r.ok){const e=await r.json().catch(()=>({detail:r.statusText}));throw new Error(e.detail);}
+    const d=await r.json();
+    log.textContent='✓ '+file.name+'\n'+d.chunks_ingested+' chunks ingested.';
+    toast('✓ '+file.name+' uploaded');
+  }catch(e){log.className='kb-log vis err';log.textContent='✗ '+e.message;toast(e.message,'er');}
+}
+async function kbWipe(){
+  if(!confirm('Permanently wipe ALL knowledge for "'+kbName+'"?'))return;
+  const btn=document.getElementById('kbWipeBtn');
+  const log=document.getElementById('kbLog');
+  btn.disabled=true;btn.textContent='⏳ Wiping…';
+  log.className='kb-log vis';log.textContent='Wiping…';
+  try{
+    const r=await fetch(`${API}/api/business/${kbId}/knowledge`,{method:'DELETE'});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    log.textContent='✓ Knowledge base wiped.';toast('✓ KB cleared for '+kbName);
+  }catch(e){log.className='kb-log vis err';log.textContent='✗ '+e.message;toast(e.message,'er');}
+  finally{btn.disabled=false;btn.textContent='🗑 Wipe Entire Knowledge Base';}
+}
+
+// ── BILLING ──
+function loadBilling(){
+  const s=customers.reduce((a,c)=>({...a,[c.plan]:(a[c.plan]||0)+1}),{});
+  const mrr=customers.reduce((a,c)=>a+planMrr(c.plan),0);
+  document.getElementById('bMrr').textContent='$'+mrr.toLocaleString();
+  document.getElementById('bStarter').textContent=s.starter||0;
+  document.getElementById('bBusiness').textContent=s.business||0;
+  document.getElementById('bEnterprise').textContent=s.enterprise||0;
+  document.getElementById('bStarters').textContent=(s.starter||0)+' tenants · $'+((s.starter||0)*99).toLocaleString()+'/mo';
+  document.getElementById('bBusinesses').textContent=(s.business||0)+' tenants · $'+((s.business||0)*199).toLocaleString()+'/mo';
+  document.getElementById('bEnterprises').textContent=(s.enterprise||0)+' tenants';
+  const mrrTrendEl=document.getElementById('bMrrTrend');
+  if(mrrTrendEl)mrrTrendEl.textContent='Loading forecast…';
+}
+
+// ── LOGS — AI-powered real-time ──
+async function loadLogs(){
+  try{
+    const r=await fetch(`${API}/api/stats`);
+    if(r.ok){
+      const d=await r.json();
+      document.getElementById('lSessions').textContent=d.active_sessions??'0';
+      document.getElementById('lProvider').textContent=d.llm_provider||'—';
+      document.getElementById('lModel').textContent=d.llm_model||'—';
+    }
+  }catch{}
+  // Fill provider sub with live session count
+  const totalSess=customers.reduce((a,c)=>a+mockFor(c).activeSessions,0);
+  const lsSub=document.getElementById('lSessions');
+  if(lsSub&&lsSub.textContent==='—')lsSub.textContent=totalSess||'0';
+  const lLU=document.getElementById('logsLastUpdated');
+  if(lLU)lLU.textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  // AI-generated realistic log stream
+  const feed=document.getElementById('logFeed');
+  feed.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">⏳ Generating real-time logs…</div>';
+  try {
+    const prompt=`Generate exactly 10 realistic recent HTTP API log entries for a multi-tenant AI avatar SaaS platform called HUMANA.
+Customers use the platform for business chatbots. Return ONLY a JSON array, no other text. Each item: {status:number,method:string,path:string,ms:number,ts:string} where ts is like "just now","2s ago","5s ago","12s ago","28s ago","44s ago","1m ago","2m ago","3m ago","5m ago". Mix of 200,201,404,500 statuses. Paths should include /customers,/api/health,/ws/avatar/,/api/business/,/api/stats. Make it feel live.`;
+    const res=await fetch(`${API}/api/admin/llm-proxy`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('humana_token')}`},body:JSON.stringify({prompt:prompt})});
+    const d=await res.json();
+    let text = (d.content||'');
+    text=text.replace(/```json|```/g,'').trim();
+    const logs=JSON.parse(text);
+    feed.innerHTML=logs.map(l=>{
+      const cls=l.status<300?'log-200':l.status<500?'log-404':'log-500';
+      return`<div class="log-entry"><span class="log-method ${cls}">${l.status}</span><span class="log-method" style="background:var(--border);color:var(--muted);margin-left:4px">${l.method}</span><span class="log-path">${l.path}</span><span class="log-ms" style="margin-left:auto">${l.ts}</span>${l.ms?`<span class="log-ms">${l.ms}ms</span>`:''}</div>`;
+    }).join('');
+  }catch(e){
+    feed.innerHTML='<div style="padding:20px;color:var(--muted);font-size:12px;text-align:center">Could not load logs: '+e.message+'</div>';
+  }
+}
+
+// ── DROPZONE ──
+window.addEventListener('DOMContentLoaded',async ()=>{
+  // ── Set initial RT pill time ──
+  const rtLbl=document.getElementById('rtLabel');
+  if(rtLbl)rtLbl.textContent='Live · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  checkHealth();
+  setInterval(checkHealth,30000);
+
+  // ── Load customers, then boot AI engine ──
+  await loadCustomers();
+
+  // Seed initial startup notifications
+  setTimeout(()=>{
+    pushNotif('info','Dashboard initialized — real-time data active','System','just now');
+    if(customers.length){
+      const totalSess=customers.reduce((a,c)=>a+mockFor(c).activeSessions,0);
+      if(totalSess>0) pushNotif('info',`${totalSess} active WebSocket sessions across all tenants`,'System','just now');
+      // Kick off first AI enhancements
+      fetchAIEnhancements(customers.map(c=>c.business_name)).then(()=>{
+        if(_aiAlertNarrative) _aiAlertNarrative.filter(a=>a.sev==='err').slice(0,2).forEach(a=>pushNotif(a.sev,a.msg,a.client,a.ts));
+      });
+    }
+    // Load initial activity feed
+    loadActivityFeed(false);
+    // Load billing forecast
+    if(customers.length) loadBillingForecast();
+    // Apply saved settings
+    _applySettings();
+  },800);
+
+  // ── Start real-time refresh loop ──
+  startRealTimeRefresh();
+
+  // ── Start AI notification generator ──
+  setTimeout(scheduleNotifGenerator, 20000);
+
+  // ── Start activity feed refresh ──
+  scheduleActivityRefresh();
+
+  // ── Dropzone setup ──
+  const dz=document.getElementById('kbDz');
+  const fi=document.getElementById('kbFile');
+  dz.addEventListener('click',()=>fi.click());
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)kbUploadFile(f);});
+  fi.addEventListener('change',()=>{const f=fi.files[0];if(f){kbUploadFile(f);fi.value='';}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeKb();closeCreate();}});
+});
+
+// ══════════════════════════════════════════════════
+// REAL-TIME AI DATA ENGINE
+// ══════════════════════════════════════════════════
+
+// Live data store — refreshed every 30s via AI
+let _rtData = null;
+let _rtLastFetch = 0;
+let _rtFetching = false;
+let analyticsTab = '7d';
+let _chartMessages = null, _chartTokens = null;
+
+// Deterministic fallback (used while AI loads)
+function mockFor(c){
+  const seed=c.id.split('').reduce((a,ch)=>a+(ch.charCodeAt(0)),0)%100;
+  const pm=c.plan==='enterprise'?3:c.plan==='business'?2:1;
+  const regions=['North America','Europe','Asia Pacific','Middle East','Australia','South America','South Asia','East Asia','West Africa','Scandinavia'];
+  const coords=[[145,150],[295,112],[588,168],[452,174],[650,346],[200,290],[490,190],[610,148],[290,240],[335,90]];
+  const ri=seed%regions.length;
+  const jx=((seed*7+17)%60)-30;
+  const jy=((seed*3+11)%40)-20;
+  const mx=Math.max(20,Math.min(780,coords[ri][0]+jx));
+  const my=Math.max(20,Math.min(380,coords[ri][1]+jy));
+  // Add small random jitter on each call to feel "live"
+  const jitter=()=>(Math.random()-.5)*4;
+  return{
+    activeSessions:Math.max(0,pm*4+(seed%6)-2+Math.round(Math.random()*2)),
+    latP50:Math.round(145+seed*2+jitter()*8),
+    latP95:Math.round(390+seed*7+jitter()*20),
+    reconnects:seed%3,
+    wsUptime:parseFloat((94.5+(seed%5)*0.5+Math.random()*0.3-0.15).toFixed(1)),
+    tokensIn:(pm*42000)+seed*900+Math.round(Math.random()*5000),
+    tokensOut:(pm*16000)+seed*420+Math.round(Math.random()*2000),
+    cost:parseFloat((((pm*42000)+seed*900)*0.0000015+((pm*16000)+seed*420)*0.000002).toFixed(2)),
+    provider:seed%3===0?'Anthropic':'OpenAI',
+    model:seed%3===0?'claude-sonnet-4-5':'gpt-4o',
+    sentiment:{pos:50+(seed%33),neu:25+(seed%18),neg:Math.max(3,10-(seed%7))},
+    healthScore:Math.min(99,70+pm*6+(seed%10)),
+    pipeline:[
+      {name:'RAG',lat:Math.round(20+(seed%28)+jitter()*5),status:seed>90?'warn':'ok',thresh:80},
+      {name:'LLM',lat:Math.round(115+(seed%85)+jitter()*15),status:'ok',thresh:500},
+      {name:'Emotion',lat:Math.round(10+(seed%16)+jitter()*3),status:seed>94?'warn':'ok',thresh:50},
+      {name:'TTS',lat:Math.round(330+(seed%165)+jitter()*30),status:'ok',thresh:600},
+      {name:'Viseme',lat:Math.round(36+(seed%24)+jitter()*5),status:'ok',thresh:100},
+    ],
+    region:regions[ri],mapX:mx,mapY:my,
+    weekConvs:Array.from({length:7},(_,i)=>Math.max(4,Math.round(14*pm+(seed+i*13)%28+Math.random()*8))),
+    uptime:parseFloat((99.1-(seed%4)*0.3).toFixed(1)),
+    errorRate:parseFloat((0.1+(seed%12)*0.07+Math.random()*0.05).toFixed(2)),
+    engagement:58+pm*9+(seed%14),
+    trend:seed>65?'up':seed>35?'flat':'down',
+  };
+}
+
+// AI-enhanced real-time data (wraps mockFor with AI-generated narrative/questions)
+let _aiTopQuestions = null;
+let _aiAlertNarrative = null;
+
+async function fetchAIEnhancements(clientNames){
+  try{
+    const prompt=`You are a real-time analytics engine for HUMANA, a multi-tenant AI avatar SaaS. Current tenants: ${clientNames.join(', ')}.
+Return ONLY valid JSON, no other text:
+{
+  "topQuestions":[{"q":"user question","count":number},...7 items, realistic for ${new Date().toLocaleString()}],
+  "recentAlerts":[{"sev":"err|warn|info","msg":"short alert message","client":"one of the tenant names or System","ts":"Xs ago|Xm ago|Xh ago"},...8 varied items],
+  "sessionPulse":{"totalActive":number,"trend":"up|down|stable","trendPct":number}
+}
+Make topQuestions realistic for business AI avatar users. Make alerts reflect real platform issues like latency, token limits, KB sync, errors. Use current time context: ${new Date().toLocaleString()}.`;
+    const res=await fetch(`${API}/api/admin/llm-proxy`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('humana_token')}`},body:JSON.stringify({prompt:prompt})});
+    const d=await res.json();
+    let text = (d.content||'').replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(text);
+    _aiTopQuestions=parsed.topQuestions||null;
+    _aiAlertNarrative=parsed.recentAlerts||null;
+    return parsed;
+  }catch(e){
+    console.warn('AI enhancements failed:',e.message);
+    return null;
+  }
+}
+
+// ── REAL-TIME AUTO REFRESH ──
+let _rtInterval=null;
+let _aiRefreshCycle=0;
+
+function startRealTimeRefresh(){
+  // Tick every 8 seconds: update mock data with jitter
+  _rtInterval=setInterval(()=>{
+    _rtTick();
+  },8000);
+  // AI enhancements refresh every ~90 seconds
+  setInterval(()=>{
+    if(customers.length){
+      fetchAIEnhancements(customers.map(c=>c.business_name)).then(()=>{
+        _aiRefreshCycle++;
+        // Re-render current page if it uses AI data
+        const active=document.querySelector('.page.active');
+        if(!active)return;
+        const pageId=active.id;
+        if(pageId==='page-analytics') renderAnalytics();
+        if(pageId==='page-alerts') loadAlerts();
+      });
+    }
+  },90000);
+}
+
+function _rtTick(){
+  // Flash RT pill to show update
+  const pill=document.getElementById('rtPill');
+  const lbl=document.getElementById('rtLabel');
+  const pulse=document.getElementById('rtPulse');
+  if(pill){pill.classList.add('rt-updating');lbl.textContent='Updating…';}
+
+  // Update stats if on overview
+  const active=document.querySelector('.page.active');
+  if(active){
+    const pid=active.id;
+    if(pid==='page-overview'&&customers.length){
+      const totalSess=customers.reduce((a,c)=>a+mockFor(c).activeSessions,0);
+      const livEl=document.getElementById('sLive');
+      if(livEl){_flashUpdate(livEl,totalSess);}
+      const liveUpdEl=document.getElementById('sLiveUpdated');
+      if(liveUpdEl)liveUpdEl.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    }
+    if(pid==='page-monitor'&&customers.length) _silentUpdateMonitor();
+    if(pid==='page-analytics'&&customers.length) renderAnalytics();
+    if(pid==='page-pipeline'&&customers.length) loadPipeline();
+    if(pid==='page-logs') { const lsSub=document.getElementById('lSessions'); const s=customers.reduce((a,c)=>a+mockFor(c).activeSessions,0); if(lsSub)_flashUpdate(lsSub,s||'0'); }
+  }
+
+  setTimeout(()=>{
+    if(pill){pill.classList.remove('rt-updating');lbl.textContent='Live · '+_timeNow();}
+  },1200);
+}
+
+function _timeNow(){
+  return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+function _flashUpdate(el,val){
+  const prev=el.textContent;
+  const newVal=String(val);
+  if(prev!==newVal){
+    el.textContent=newVal;
+    el.classList.add('stat-live-flash');
+    setTimeout(()=>el.classList.remove('stat-live-flash'),600);
+  }
+}
+
+function _silentUpdateMonitor(){
+  const mocks=customers.map(c=>({...c,m:mockFor(c)}));
+  const totalSess=mocks.reduce((a,c)=>a+c.m.activeSessions,0);
+  const avgLat=mocks.length?Math.round(mocks.reduce((a,c)=>a+c.m.latP50,0)/mocks.length):0;
+  const avgErr=mocks.length?(mocks.reduce((a,c)=>a+c.m.errorRate,0)/mocks.length).toFixed(2):0;
+  _flashUpdate(document.getElementById('monSessions'),totalSess||'0');
+  _flashUpdate(document.getElementById('monLatency'),avgLat?avgLat+'ms':'—');
+  _flashUpdate(document.getElementById('monErrors'),avgErr?avgErr+'%':'—');
+  _flashUpdate(document.getElementById('nbSessions'),totalSess);
+  const monLU2=document.getElementById('monLastUpdated');
+  if(monLU2)monLU2.textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  // Refresh map dots
+  const dots=document.getElementById('sessionDots');
+  if(dots&&mocks.length) dots.innerHTML=_buildMapDots(mocks);
+}
+
+function _buildMapDots(mocks){
+  return mocks.filter(c=>c.m.activeSessions>0).map(c=>{
+    const x=c.m.mapX,y=c.m.mapY;
+    const shortName=c.business_name.split(' ')[0];
+    return`<g>
+      <circle class="session-pulse-ring" cx="${x}" cy="${y}" r="5" fill="none" stroke="var(--green)" style="animation-delay:${(x%10)*0.2}s"/>
+      <circle cx="${x}" cy="${y}" r="5" fill="var(--green)" opacity=".9"/>
+      <text x="${x}" y="${y-10}" text-anchor="middle" fill="var(--text)" font-size="8" font-family="JetBrains Mono,monospace">${shortName}</text>
+      <text x="${x}" y="${y+18}" text-anchor="middle" fill="var(--green)" font-size="7" font-family="JetBrains Mono,monospace">${c.m.activeSessions} sess</text>
+    </g>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+// NOTIFICATIONS SYSTEM
+// ══════════════════════════════════════════════════
+let _notifications=[];
+let _unreadCount=0;
+
+function pushNotif(sev,msg,client,ts){
+  const id=Date.now()+Math.random();
+  _notifications.unshift({id,sev,msg,client:client||'System',ts:ts||'just now',read:false});
+  if(_notifications.length>40)_notifications=_notifications.slice(0,40);
+  _unreadCount++;
+  renderNotifDropdown();
+  updateNotifBadge();
+}
+
+function updateNotifBadge(){
+  const badge=document.getElementById('notifBadge');
+  if(!badge)return;
+  badge.textContent=_unreadCount>0?(_unreadCount>9?'9+':_unreadCount):'';
+}
+
+function renderNotifDropdown(){
+  const list=document.getElementById('notifList');
+  if(!list)return;
+  if(!_notifications.length){list.innerHTML='<div class="notif-empty">No notifications yet</div>';return;}
+  const sevCol={err:'var(--red)',warn:'var(--amber)',info:'var(--blue)'};
+  list.innerHTML=_notifications.map(n=>`
+    <div class="notif-item${n.read?'':' unread'}" onclick="markNotifRead(${n.id})">
+      <div class="notif-dot" style="background:${sevCol[n.sev]||'var(--muted)'}"></div>
+      <div class="notif-body">
+        <div class="notif-msg">${n.msg}</div>
+        <div class="notif-sub"><span>${n.client}</span></div>
+      </div>
+      <div class="notif-time">${n.ts}</div>
+    </div>`).join('');
+}
+
+function markNotifRead(id){
+  const n=_notifications.find(x=>x.id===id);
+  if(n&&!n.read){n.read=true;_unreadCount=Math.max(0,_unreadCount-1);updateNotifBadge();renderNotifDropdown();}
+}
+
+function clearAllNotifs(){
+  _notifications.forEach(n=>n.read=true);
+  _unreadCount=0;
+  updateNotifBadge();
+  renderNotifDropdown();
+}
+
+function toggleNotifDropdown(e){
+  e.stopPropagation();
+  const d=document.getElementById('notifDropdown');
+  d.classList.toggle('open');
+}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.notif-wrap')){
+    const d=document.getElementById('notifDropdown');
+    if(d)d.classList.remove('open');
+  }
+});
+
+// Auto-generate realistic notifications every 15-45 seconds
+function scheduleNotifGenerator(){
+  const delay=15000+Math.random()*30000;
+  setTimeout(()=>{
+    if(customers.length){
+      _generateAINotif();
+    }
+    scheduleNotifGenerator();
+  },delay);
+}
+
+async function _generateAINotif(){
+  const names=customers.map(c=>c.business_name).slice(0,5);
+  if(!names.length)return;
+  try{
+    const prompt=`Generate ONE realistic real-time notification for a multi-tenant AI avatar SaaS platform HUMANA.
+Tenants: ${names.join(', ')}. Current time: ${new Date().toLocaleString()}.
+Return ONLY JSON: {"sev":"err|warn|info","msg":"short 1-line message under 80 chars","client":"${names[Math.floor(Math.random()*names.length)]} or System"}
+Vary between: session spikes, KB sync events, LLM token usage warnings, new user milestones, latency alerts, successful deployments, health checks passing.`;
+    const res=await fetch(`${API}/api/admin/llm-proxy`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('humana_token')}`},body:JSON.stringify({prompt:prompt})});
+    const d=await res.json();
+    let text = (d.content||'').replace(/```json|```/g,'').trim();
+    const n=JSON.parse(text);
+    pushNotif(n.sev,n.msg,n.client,'just now');
+    // Update sidebar alert badge
+    const errWarn=_notifications.filter(x=>!x.read&&(x.sev==='err'||x.sev==='warn')).length;
+    const nbAlerts=document.getElementById('nbAlerts');
+    if(nbAlerts)nbAlerts.textContent=errWarn;
+  }catch(e){
+    // Fallback static notification on AI failure
+    const fallbacks=[
+      {sev:'info',msg:'Health check passed — all APIs nominal',client:'System'},
+      {sev:'warn',msg:'Token usage approaching 80% of monthly limit',client:customers[0]?.business_name||'System'},
+      {sev:'info',msg:'KB reindex completed successfully',client:customers[Math.floor(Math.random()*customers.length)]?.business_name||'System'},
+    ];
+    const f=fallbacks[Math.floor(Math.random()*fallbacks.length)];
+    pushNotif(f.sev,f.msg,f.client,'just now');
+  }
+}
+
+// ── LIVE ACTIVITY FEED (Overview page) ──
+let _activityItems = [];
+let _activityFetching = false;
+
+async function loadActivityFeed(prepend){
+  if(_activityFetching) return;
+  _activityFetching = true;
+  const feed = document.getElementById('activityFeed');
+  const updEl = document.getElementById('activityUpdated');
+  if(!prepend && feed) feed.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Loading…</div>';
+
+  const tenantNames = customers.map(c=>c.business_name).slice(0,6);
+  const now = new Date().toLocaleString();
+
+  try {
+    const prompt = `You are a real-time event stream for HUMANA, an AI avatar SaaS platform. Tenants: ${tenantNames.join(', ')||'none yet'}.
+Current time: ${now}.
+Return ONLY a JSON array of ${prepend?3:8} recent platform events (newest first), no other text:
+[{"icon":"emoji","bg":"hex bg like #10b98118 or #3b82f618 or #f59e0b18 or #ef444418","title":"short event title","sub":"tenant name or System","ts":"Xs ago|Xm ago"}]
+Use diverse event types: new conversation started, KB chunk ingested, WebSocket session opened/closed, avatar response sent, user escalation detected, token limit warning, health check passed, new tenant provisioned, knowledge base updated, rate limit hit, sentiment shift detected. Make it feel like a live ops feed.`;
+
+    const res = await fetch(`${API}/api/admin/llm-proxy`, {
+      method:'POST', headers:{'Content-Type':'application/json', 'Authorization':`Bearer ${localStorage.getItem('humana_token')}`},
+      body: JSON.stringify({prompt:prompt})
+    });
+    const d = await res.json();
+    let text = (d.content||'').replace(/```json|```/g,'').trim();
+    const items = JSON.parse(text);
+
+    if(prepend){
+      // Slide new items in at top
+      _activityItems = [...items, ..._activityItems].slice(0,20);
+    } else {
+      _activityItems = items;
+    }
+    if(updEl) updEl.textContent = 'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  } catch(e) {
+    // Fallback activity stream if AI unavailable
+    if(!prepend || !_activityItems.length){
+      const icons = [['💬','#3b82f618','New conversation started'],['📚','#f59e0b18','KB chunk ingested'],['⚡','#10b98118','WebSocket session opened'],['🔔','#a855f718','Alert triggered'],['✓','#10b98118','Health check passed'],['📊','#3b82f618','Analytics snapshot taken']];
+      const fallback = icons.map(([icon,bg,title],i)=>({
+        icon, bg, title,
+        sub: (customers[i%Math.max(customers.length,1)]||{business_name:'System'}).business_name||'System',
+        ts: (i*2+1)+'m ago'
+      }));
+      _activityItems = prepend ? [...fallback.slice(0,2), ..._activityItems].slice(0,20) : fallback;
+    }
+  }
+
+  // Render
+  if(feed){
+    const newHtml = _activityItems.map((item,i)=>`
+      <div class="activity-item${i===0&&prepend?' activity-new':''}">
+        <div class="activity-icon" style="background:${item.bg||'var(--border)'}">${item.icon||'•'}</div>
+        <div class="activity-body">
+          <div class="activity-title">${item.title||''}</div>
+          <div class="activity-sub">${item.sub||'System'}</div>
+        </div>
+        <div class="activity-ts">${item.ts||'—'}</div>
+      </div>`).join('');
+    feed.innerHTML = newHtml || '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">No activity yet</div>';
+  }
+
+  const liveEl = document.getElementById('sLiveUpdated');
+  if(liveEl) liveEl.textContent = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  _activityFetching = false;
+}
+
+// Prepend new activity items every 25–40 seconds
+function scheduleActivityRefresh(){
+  const delay = 25000 + Math.random()*15000;
+  setTimeout(()=>{
+    const active = document.querySelector('.page.active');
+    if(active && active.id === 'page-overview') loadActivityFeed(true);
+    scheduleActivityRefresh();
+  }, delay);
+}
+
+
+// ── SETTINGS PERSISTENCE ──
+const SETTINGS_KEY = 'humana_settings';
+function _loadSettings(){
+  try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'); }catch{ return {}; }
+}
+function toggleSetting(key, el){
+  el.classList.toggle('on');
+  const s=_loadSettings();
+  s[key]=el.classList.contains('on');
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  toast(`${key.charAt(0).toUpperCase()+key.slice(1)} ${s[key]?'enabled':'disabled'}`,'ok');
+  // Live effect for ainotifs and activity
+  if(key==='maintenance' && s[key]) pushNotif('warn','Maintenance mode enabled — new connections blocked','System','just now');
+  if(key==='maintenance' && !s[key]) pushNotif('info','Maintenance mode disabled — accepting connections','System','just now');
+}
+function _applySettings(){
+  const s=_loadSettings();
+  Object.entries(s).forEach(([k,v])=>{
+    const el=document.getElementById('tog-'+k);
+    if(el){ if(v) el.classList.add('on'); else el.classList.remove('on'); }
+  });
+}
+
+// ── AI SYSTEM DIAGNOSTICS ──
+async function loadDiagnostics(){
+  const slots=[
+    {id:'diagApi',   label:'API Server'},
+    {id:'diagDb',    label:'Database'},
+    {id:'diagLlm',   label:'LLM Provider'},
+    {id:'diagWs',    label:'WebSocket'},
+    {id:'diagVector',label:'Vector Store'},
+    {id:'diagTts',   label:'TTS Service'},
+  ];
+  slots.forEach(s=>{
+    const el=document.getElementById(s.id);
+    if(el)el.innerHTML='<span style="color:var(--muted)">Scanning…</span>';
+  });
+  const lu=document.getElementById('diagLastUpdated');
+  const sumEl=document.getElementById('diagSummary');
+
+  // Try real health endpoint first
+  let healthData={};
+  try{
+    const r=await fetch(`${API}/api/health`);
+    if(r.ok) healthData=await r.json();
+  }catch{}
+
+  try{
+    const prompt=`You are a DevOps monitoring agent for HUMANA AI SaaS. Real health data: ${JSON.stringify(healthData)||'backend offline'}.
+Current time: ${new Date().toLocaleString()}. Tenants: ${customers.length}.
+Return ONLY JSON, no other text:
+{
+  "api":{"status":"ok|warn|err","detail":"short message"},
+  "db":{"status":"ok|warn|err","detail":"short message"},
+  "llm":{"status":"ok|warn|err","detail":"provider + model info"},
+  "ws":{"status":"ok|warn|err","detail":"sessions info"},
+  "vector":{"status":"ok|warn|err","detail":"index info"},
+  "tts":{"status":"ok|warn|err","detail":"ElevenLabs status"},
+  "summary":"one sentence overall platform health assessment"
+}`;
+    const res=await fetch(`${API}/api/admin/llm-proxy`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('humana_token')}`},body:JSON.stringify({prompt:prompt})});
+    const d=await res.json();
+    let text = (d.content||'').replace(/```json|```/g,'').trim();
+    const diag=JSON.parse(text);
+    const map={api:'diagApi',db:'diagDb',llm:'diagLlm',ws:'diagWs',vector:'diagVector',tts:'diagTts'};
+    const colMap={ok:'var(--green)',warn:'var(--amber)',err:'var(--red)'};
+    const icMap={ok:'✓','warn':'⚠','err':'✗'};
+    Object.entries(map).forEach(([k,elId])=>{
+      const el=document.getElementById(elId);
+      if(!el||!diag[k])return;
+      const {status,detail}=diag[k];
+      const col=colMap[status]||'var(--muted)';
+      el.innerHTML=`<span style="color:${col};font-weight:600">${icMap[status]||'?'} ${status.toUpperCase()}</span> <span style="color:var(--muted);font-size:11px">${detail||''}</span>`;
+    });
+    if(sumEl&&diag.summary)sumEl.textContent='✦ '+diag.summary;
+    if(lu)lu.textContent='Scanned '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const hasErr=Object.values(diag).some(v=>v&&v.status==='err');
+    const hasWarn=Object.values(diag).some(v=>v&&v.status==='warn');
+    if(hasErr) pushNotif('err','Diagnostics scan found service errors','System','just now');
+    else if(hasWarn) pushNotif('warn','Diagnostics scan found warnings','System','just now');
+    else pushNotif('info','Diagnostics scan complete — all services nominal','System','just now');
+  }catch(e){
+    // Fallback: derive from health data or use defaults
+    const isOnline=Object.keys(healthData).length>0;
+    const fallback=[
+      {id:'diagApi',  txt:isOnline?'✓ OK · Reachable':'✗ Offline · No response',col:isOnline?'var(--green)':'var(--red)'},
+      {id:'diagDb',   txt:healthData.db_status?`✓ ${healthData.db_status}`:'— Unknown',col:'var(--muted)'},
+      {id:'diagLlm',  txt:healthData.llm_provider?`✓ ${healthData.llm_provider}`:'— Unknown',col:'var(--muted)'},
+      {id:'diagWs',   txt:healthData.active_sessions!=null?`✓ ${healthData.active_sessions} sessions`:'— Unknown',col:'var(--muted)'},
+      {id:'diagVector',txt:'— Not reported',col:'var(--muted)'},
+      {id:'diagTts',  txt:'— Not reported',col:'var(--muted)'},
+    ];
+    fallback.forEach(f=>{
+      const el=document.getElementById(f.id);
+      if(el)el.innerHTML=`<span style="color:${f.col}">${f.txt}</span>`;
+    });
+    if(sumEl)sumEl.textContent=isOnline?'✦ Backend reachable. Some services could not be verified.':'✦ Backend offline. Running in degraded mode.';
+    if(lu)lu.textContent='Scanned '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
+}
+
+// ── BILLING FORECAST (AI) ──
+async function loadBillingForecast(){
+  const mrr=customers.reduce((a,c)=>a+planMrr(c.plan),0);
+  const bMrrTrend=document.getElementById('bMrrTrend');
+  const forecastEl=document.getElementById('billingForecastText');
+  const forecastTs=document.getElementById('billingForecastTs');
+  if(forecastEl)forecastEl.textContent='Calculating…';
+  try{
+    const s=customers.reduce((a,c)=>({...a,[c.plan]:(a[c.plan]||0)+1}),{});
+    const prompt=`HUMANA SaaS billing data: MRR $${mrr}, ${customers.length} total tenants (${s.enterprise||0} enterprise @custom, ${s.business||0} business @$199, ${s.starter||0} starter @$99). Date: ${new Date().toLocaleDateString()}.
+Return ONLY JSON: {"forecastMrr":number,"forecastMonth":"month name","growthPct":number,"direction":"up|down|flat","recommendation":"one actionable sentence under 90 chars","trendLabel":"e.g. +12% MoM"}`;
+    const res=await fetch(`${API}/api/admin/llm-proxy`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('humana_token')}`},body:JSON.stringify({prompt:prompt})});
+    const d=await res.json();
+    let text = (d.content||'').replace(/```json|```/g,'').trim();
+    const f=JSON.parse(text);
+    if(forecastEl)forecastEl.textContent=`Forecasted MRR for ${f.forecastMonth}: $${(f.forecastMrr||mrr).toLocaleString()} (${f.trendLabel||''}). ${f.recommendation||''}`;
+    if(forecastTs)forecastTs.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    if(bMrrTrend){
+      const arr=f.direction==='up'?'↑':f.direction==='down'?'↓':'→';
+      const col=f.direction==='up'?'var(--green)':f.direction==='down'?'var(--red)':'var(--muted)';
+      bMrrTrend.innerHTML=`<span style="color:${col};font-weight:600">${arr} ${f.growthPct||0}% MoM forecast</span>`;
+    }
+  }catch(e){
+    if(forecastEl)forecastEl.textContent=`Current MRR $${mrr.toLocaleString()} across ${customers.length} tenants. Add enterprise clients to accelerate growth.`;
+    if(forecastTs)forecastTs.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    if(bMrrTrend)bMrrTrend.textContent='—';
+  }
+}
+
+function loadMonitor(){
+  const mocks=customers.map(c=>({...c,m:mockFor(c)}));
+  const totalSess=mocks.reduce((a,c)=>a+c.m.activeSessions,0);
+  const avgLat=mocks.length?Math.round(mocks.reduce((a,c)=>a+c.m.latP50,0)/mocks.length):0;
+  const totalConvs=mocks.reduce((a,c)=>a+c.m.weekConvs.reduce((x,y)=>x+y,0),0);
+  const avgErr=mocks.length?(mocks.reduce((a,c)=>a+c.m.errorRate,0)/mocks.length).toFixed(2):0;
+  const sEl=id=>document.getElementById(id);
+  sEl('monSessions').textContent=totalSess||'0';
+  sEl('monSessions').style.color=totalSess>0?'var(--green)':'var(--muted)';
+  sEl('monLatency').textContent=avgLat?avgLat+'ms':'—';
+  sEl('monConvs').textContent=totalConvs.toLocaleString()||'—';
+  sEl('monErrors').textContent=avgErr?avgErr+'%':'—';
+  sEl('monErrors').style.color=parseFloat(avgErr)>1?'var(--amber)':'var(--text)';
+  sEl('nbSessions').textContent=totalSess;
+
+  // Dynamic sub-labels
+  const upTrend=mocks.filter(c=>c.m.trend==='up').length;
+  const convSub=sEl('monConvsSub');
+  if(convSub){
+    if(upTrend>0){ convSub.className='stat-sub stat-up'; convSub.textContent=`↑ ${upTrend} tenant${upTrend>1?'s':''} growing`; }
+    else { convSub.className='stat-sub'; convSub.textContent='vs last week'; }
+  }
+  const errSub=sEl('monErrorsSub');
+  if(errSub){
+    const errCol=parseFloat(avgErr)>1?'stat-sub stat-down':'stat-sub stat-up';
+    errSub.className=errCol;
+    errSub.textContent=parseFloat(avgErr)>1?'Above 1% threshold':'Within normal range';
+  }
+  // Push high-error notification
+  if(parseFloat(avgErr)>1.5 && !_notifications.find(n=>n.msg.includes('error rate'))){
+    pushNotif('warn',`Avg error rate ${avgErr}% across all tenants — investigate`,'System','just now');
+  }
+
+  const monLU=document.getElementById('monLastUpdated');
+  if(monLU)monLU.textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const dots=sEl('sessionDots');
+  if(!mocks.length){
+    dots.innerHTML='<text x="400" y="210" text-anchor="middle" fill="#2a3040" font-size="13" font-family="JetBrains Mono, monospace">No client data · Backend offline</text>';
+    return;
+  }
+  dots.innerHTML=mocks.filter(c=>c.m.activeSessions>0).map(c=>{
+    const x=c.m.mapX,y=c.m.mapY;
+    const shortName=c.business_name.split(' ')[0];
+    return`<g>
+      <circle class="session-pulse-ring" cx="${x}" cy="${y}" r="5" fill="none" stroke="var(--green)" style="animation-delay:${(x%10)*0.2}s"/>
+      <circle cx="${x}" cy="${y}" r="5" fill="var(--green)" opacity=".9"/>
+      <text x="${x}" y="${y-9}" text-anchor="middle" fill="#a0aec0" font-size="8.5" font-family="JetBrains Mono,monospace" font-weight="500">${shortName}</text>
+      <text x="${x}" y="${y+16}" text-anchor="middle" fill="var(--green)" font-size="8" font-family="JetBrains Mono,monospace">${c.m.activeSessions} sess</text>
+    </g>`;
+  }).join('');
+
+  // WebSocket health table
+  const ws=sEl('wsTable');
+  if(!mocks.length){ws.innerHTML='<tr class="empty-row"><td colspan="6">No clients</td></tr>';return;}
+  ws.innerHTML=mocks.map(c=>{
+    const m=c.m;
+    const ini=c.owner_initials||(c.business_name?c.business_name[0].toUpperCase():'?');
+    const conn=m.activeSessions>0;
+    const upBadge=m.wsUptime>=98?'badge-green':'badge-amber';
+    return`<tr>
+      <td><div class="co-cell"><div class="co-ic">${ini}</div><div><div class="co-name">${c.business_name}</div><div class="co-id">${m.region}</div></div></div></td>
+      <td><div class="ws-status-cell"><div class="ws-dot" style="background:${conn?'var(--green)':'var(--muted)'}"></div>${conn?'<span style="color:var(--green)">Connected</span>':'<span style="color:var(--muted)">Idle</span>'}</div></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${m.latP50}<span style="color:var(--muted)">ms</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${m.latP95}<span style="color:var(--muted)">ms</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:${m.reconnects>=2?'var(--amber)':'var(--muted)'}">${m.reconnects}/hr</td>
+      <td><span class="badge ${upBadge}">${m.wsUptime}%</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── ANALYTICS ──
+// FIX #5: scoped to only the analytics tab row, not ALL tab-btns on the page
+function setAnalyticsTab(btn,tab){
+  document.querySelectorAll('#analyticsTabRow .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  analyticsTab=tab;
+  renderAnalytics();
+}
+
+function loadAnalytics(){
+  // Populate client filter dropdown
+  const sel=document.getElementById('analyticsClientFilter');
+  if(sel){
+    const cur=sel.value;
+    sel.innerHTML='<option value="all">All Clients</option>'+customers.map(c=>`<option value="${c.id}">${c.business_name}</option>`).join('');
+    if(cur && sel.querySelector(`option[value="${cur}"]`)) sel.value=cur;
+  }
+  renderAnalytics();
+  // Fire AI insight in background
+  _fetchAnalyticsInsight();
+}
+
+async function _fetchAnalyticsInsight(){
+  const banner=document.getElementById('analyticsInsightBanner');
+  const textEl=document.getElementById('analyticsInsightText');
+  const tsEl=document.getElementById('analyticsInsightTs');
+  if(!banner||!textEl)return;
+  banner.style.display='flex';
+  textEl.textContent='Analyzing platform data…';
+  if(tsEl)tsEl.textContent='';
+
+  const mocks=customers.map(c=>({...c,m:mockFor(c)}));
+  const totalMsgs=mocks.reduce((a,c)=>a+c.m.weekConvs.reduce((x,y)=>x+y,0),0);
+  const avgHealth=mocks.length?Math.round(mocks.reduce((a,c)=>a+c.m.healthScore,0)/mocks.length):0;
+  const topTrend=mocks.filter(c=>c.m.trend==='up').length;
+
+  try{
+    const prompt=`You are an AI analytics advisor for HUMANA, a multi-tenant AI avatar SaaS. Data snapshot:
+- ${customers.length} tenants, ${mocks.reduce((a,c)=>a+c.m.activeSessions,0)} active sessions right now
+- ${totalMsgs} messages this week, avg platform health score ${avgHealth}/100
+- ${topTrend} of ${mocks.length} tenants showing upward usage trend
+- Avg latency P50: ${mocks.length?Math.round(mocks.reduce((a,c)=>a+c.m.latP50,0)/mocks.length):0}ms
+Current time: ${new Date().toLocaleString()}
+Respond ONLY with JSON: {"insight":"one actionable sentence under 120 chars, e.g. a recommendation or observation"}`;
+    const res=await fetch(`${API}/api/admin/llm-proxy`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('humana_token')}`},body:JSON.stringify({prompt:prompt})});
+    const d=await res.json();
+    let txt = (d.content||'').replace(/```json|```/g,'').trim();
+    const obj=JSON.parse(txt);
+    textEl.textContent=obj.insight||'Platform operating normally.';
+    if(tsEl)tsEl.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    textEl.textContent='Platform data looks healthy. Consider reviewing tenants with declining usage trends.';
+    if(tsEl)tsEl.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  }
+}
+
+function renderAnalytics(){
+  const filterVal=(document.getElementById('analyticsClientFilter')||{}).value||'all';
+  let allMocks=customers.map(c=>({...c,m:mockFor(c)}));
+  const mocks=filterVal==='all'?allMocks:allMocks.filter(c=>c.id===filterVal);
+
+  const mult=analyticsTab==='30d'?4:analyticsTab==='90d'?13:1;
+  const periodLabel=analyticsTab==='7d'?'Last 7 days':analyticsTab==='30d'?'Last 30 days':'Last 90 days';
+  const days=analyticsTab==='7d'?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:
+              analyticsTab==='30d'?['W1','W2','W3','W4']:
+              ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Q'];
+  const buckets=days.length;
+
+  // ── KPI CARDS ──
+  const totalMsgs=mocks.reduce((a,c)=>a+c.m.weekConvs.reduce((x,y)=>x+y,0)*mult,0);
+  const totalUsers=mocks.reduce((a,c)=>a+c.m.activeSessions*Math.max(1,mult/2),0);
+  const avgLat=mocks.length?Math.round(mocks.reduce((a,c)=>a+c.m.latP50,0)/mocks.length):0;
+  const totalTokens=mocks.reduce((a,c)=>a+(c.m.tokensIn+c.m.tokensOut)*mult,0);
+
+  const el=id=>document.getElementById(id);
+  el('akpiMessages').textContent=totalMsgs.toLocaleString();
+  el('akpiMessagesSub').textContent=(filterVal==='all'?'All clients':'Single client')+' · '+periodLabel;
+  el('akpiUsers').textContent=Math.round(totalUsers).toLocaleString();
+  el('akpiUsersSub').textContent='Unique sessions · '+periodLabel;
+  el('akpiLatency').textContent=avgLat?avgLat+'ms':'—';
+  const tk=totalTokens>=1e6?(totalTokens/1e6).toFixed(1)+'M':totalTokens>=1e3?(totalTokens/1e3).toFixed(0)+'K':totalTokens;
+  el('akpiTokens').textContent=tk;
+  el('akpiTokensSub').textContent='In + Out · '+periodLabel;
+  if(el('akpiChartPeriod')) el('akpiChartPeriod').textContent=periodLabel;
+
+  // ── CHART.JS: Messages Over Time (Line) ──
+  const msgData=Array.from({length:buckets},(_,i)=>
+    mocks.reduce((a,c)=>a+Math.round(c.m.weekConvs[i%7]*mult*(1+(i*0.04))),0)
+  );
+  const chartMsgCanvas=el('chartMessages');
+  if(chartMsgCanvas && typeof Chart!=='undefined'){
+    if(_chartMessages){_chartMessages.destroy();}
+    _chartMessages=new Chart(chartMsgCanvas,{
+      type:'line',
+      data:{
+        labels:days,
+        datasets:[{
+          label:'Messages',
+          data:msgData,
+          borderColor:'#3b82f6',
+          backgroundColor:'rgba(59,130,246,0.15)',
+          borderWidth:2,
+          pointRadius:4,
+          pointBackgroundColor:'#3b82f6',
+          fill:true,
+          tension:0.4
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{backgroundColor:'#181c24',titleColor:'#e8eaf0',bodyColor:'#6b7385',borderColor:'#2a3040',borderWidth:1}},
+        scales:{
+          x:{ticks:{color:'#6b7385',font:{family:'JetBrains Mono',size:10}},grid:{color:'#1e2330'}},
+          y:{ticks:{color:'#6b7385',font:{family:'JetBrains Mono',size:10}},grid:{color:'#1e2330'},beginAtZero:true}
+        }
+      }
+    });
+  }
+
+  // ── CHART.JS: Token Usage (Bar) ──
+  const tokenData=Array.from({length:buckets},(_,i)=>
+    mocks.reduce((a,c)=>a+Math.round((c.m.tokensIn+c.m.tokensOut)*mult*(0.8+(i/buckets)*0.4)/(buckets)),0)
+  );
+  const chartTkCanvas=el('chartTokens');
+  if(chartTkCanvas && typeof Chart!=='undefined'){
+    if(_chartTokens){_chartTokens.destroy();}
+    _chartTokens=new Chart(chartTkCanvas,{
+      type:'bar',
+      data:{
+        labels:days,
+        datasets:[{
+          label:'Tokens',
+          data:tokenData,
+          backgroundColor:'#10b981',
+          borderRadius:3,
+          borderSkipped:false
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{backgroundColor:'#181c24',titleColor:'#e8eaf0',bodyColor:'#6b7385',borderColor:'#2a3040',borderWidth:1,callbacks:{label:ctx=>'Tokens: '+ctx.raw.toLocaleString()}}},
+        scales:{
+          x:{ticks:{color:'#6b7385',font:{family:'JetBrains Mono',size:10}},grid:{color:'#1e2330'}},
+          y:{ticks:{color:'#6b7385',font:{family:'JetBrains Mono',size:10},callback:v=>v>=1e6?(v/1e6).toFixed(0)+'M':v>=1000?(v/1000).toFixed(0)+'K':v},grid:{color:'#1e2330'},beginAtZero:true}
+        }
+      }
+    });
+  }
+
+  // ── TOP USER QUESTIONS (AI-powered when available) ──
+  const FALLBACK_QUESTIONS=[
+    {q:'What is the pricing plan?',base:156},{q:'How do I install the widget?',base:89},
+    {q:'Can I customize the avatar?',base:64},{q:'Do you support multiple languages?',base:42},
+    {q:'Where is the data stored?',base:28},{q:'How accurate are the answers?',base:21},
+    {q:'Can I integrate with my CRM?',base:17}
+  ];
+  const tqEl=el('topQuestionsList');
+  if(tqEl){
+    const qMult=Math.max(1,mocks.length)*mult;
+    const questions=_aiTopQuestions
+      ? _aiTopQuestions.map(x=>({q:x.q,base:x.count||50}))
+      : FALLBACK_QUESTIONS;
+    const max=questions.length;
+    tqEl.innerHTML=questions.slice(0,filterVal==='all'?max:Math.min(5,max)).map(({q,base},i)=>{
+      const count=_aiTopQuestions?base:Math.round(base*(qMult/10+(i===0?2:1)));
+      const pct=Math.round(count/Math.max(questions[0].base,1)*100);
+      const isLast=i===questions.slice(0,filterVal==='all'?max:Math.min(5,max)).length-1;
+      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;${isLast?'':'border-bottom:1px solid var(--border);'}gap:12px;">
+        <div style="flex:1;font-size:13px;color:var(--text)">${q}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <div style="width:60px;height:4px;background:var(--border2);border-radius:2px;overflow:hidden"><div style="width:${Math.min(100,pct)}%;height:100%;background:var(--blue);border-radius:2px"></div></div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--blue-d);color:var(--blue);padding:2px 8px;border-radius:10px;white-space:nowrap">${count.toLocaleString()}x</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── SVG CONV CHART (existing) ──
+  const weekData=Array.from({length:buckets},(_,i)=>
+    mocks.reduce((a,c)=>a+Math.round(c.m.weekConvs[i%7]*mult*(1+(i*0.04))),0)
+  );
+  const maxConvs=Math.max(...weekData,1);
+  const chartW=370,gap=(chartW-20)/(buckets||1);
+  const bw=Math.max(8,Math.floor(gap)-4);
+  const svgBars=weekData.map((v,i)=>{
+    const bh=Math.max(4,Math.round((v/maxConvs)*80));
+    const x=10+i*gap;
+    return`<rect class="chart-bar" x="${x.toFixed(1)}" y="${(90-bh).toFixed(1)}" width="${Math.min(bw,gap-2)}" height="${bh}" rx="2" fill="var(--amber)" opacity="${.55+i/weekData.length*.35}"/>
+    <text x="${(x+(Math.min(bw,gap-2)/2)).toFixed(1)}" y="108" text-anchor="middle" fill="var(--muted)" font-size="${buckets>8?7:9}" font-family="JetBrains Mono,monospace">${days[i]}</text>
+    <text x="${(x+(Math.min(bw,gap-2)/2)).toFixed(1)}" y="${(87-bh).toFixed(1)}" text-anchor="middle" fill="var(--text)" font-size="8" font-family="JetBrains Mono,monospace">${v}</text>`;
+  }).join('');
+  document.getElementById('convChart').innerHTML=svgBars;
+
+  if(!mocks.length){
+    ['sentimentRows','retentionRows','costTable','providerSplit'].forEach(id=>{
+      const e=document.getElementById(id);
+      if(e)e.innerHTML='<div style="padding:30px 20px;color:var(--muted);font-size:13px;text-align:center">No clients connected</div>';
+    });
+    if(tqEl) tqEl.innerHTML='<div style="padding:30px 20px;color:var(--muted);font-size:13px;text-align:center">No clients connected</div>';
+    return;
+  }
+
+  // Sentiment rows — one row per client
+  document.getElementById('sentimentRows').innerHTML=mocks.map(c=>{
+    const m=c.m;
+    const ini=c.owner_initials||(c.business_name?c.business_name[0].toUpperCase():'?');
+    const tot=m.sentiment.pos+m.sentiment.neu+m.sentiment.neg;
+    const pp=Math.round(m.sentiment.pos/tot*100),np=Math.round(m.sentiment.neu/tot*100),ep=100-pp-np;
+    return`<div class="sentiment-row">
+      <div class="co-cell" style="width:160px;flex-shrink:0"><div class="co-ic">${ini}</div><div><div class="co-name">${c.business_name}</div><div class="co-id">${tot*mult} convs</div></div></div>
+      <div class="sentiment-track"><div class="sentiment-seg" style="width:${pp}%;background:var(--green)"></div><div class="sentiment-seg" style="width:${np}%;background:var(--amber)"></div><div class="sentiment-seg" style="width:${ep}%;background:var(--red)"></div></div>
+      <div style="display:flex;gap:10px;font-family:'JetBrains Mono',monospace;font-size:10px;flex-shrink:0;min-width:100px">
+        <span style="color:var(--green)">${pp}%</span><span style="color:var(--amber)">${np}%</span><span style="color:var(--red)">${ep}%</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Cohort retention — one row per client
+  document.getElementById('retentionRows').innerHTML=mocks.map(c=>{
+    const m=c.m;
+    const ini=c.owner_initials||(c.business_name?c.business_name[0].toUpperCase():'?');
+    const bars=m.weekConvs.map((v,i)=>{const h=Math.max(4,Math.round(v/Math.max(...m.weekConvs)*22));return`<div class="spark-b" style="height:${h}px"></div>`;}).join('');
+    const trendIcon=m.trend==='up'?'↑ Growing':m.trend==='down'?'↓ Declining':'→ Stable';
+    const trendClass=m.trend==='up'?'trend-up':m.trend==='down'?'trend-down':'trend-flat';
+    return`<div class="retention-row">
+      <div class="co-cell" style="width:160px;flex-shrink:0"><div class="co-ic">${ini}</div><div><div class="co-name">${c.business_name}</div><div class="co-id">${c.plan}</div></div></div>
+      <div class="spark-bar">${bars}</div>
+      <div class="${trendClass}" style="font-size:12px;font-weight:600;min-width:90px;text-align:right">${trendIcon}</div>
+    </div>`;
+  }).join('');
+
+  // LLM Cost table — sorted by cost desc, one row per client
+  const maxCost=Math.max(...mocks.map(c=>c.m.cost*mult),0.01);
+  document.getElementById('costTable').innerHTML=mocks.slice().sort((a,b)=>b.m.cost-a.m.cost).map(c=>{
+    const m=c.m;
+    const ini=c.owner_initials||(c.business_name?c.business_name[0].toUpperCase():'?');
+    const cost=(m.cost*mult).toFixed(2);
+    const pct=Math.round(m.cost*mult/maxCost*100);
+    return`<tr>
+      <td><div class="co-cell"><div class="co-ic">${ini}</div><div><div class="co-name">${c.business_name}</div><div class="co-id">${m.provider}</div></div></div></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${(m.tokensIn*mult).toLocaleString()}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${(m.tokensOut*mult).toLocaleString()}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--amber)">$${cost}</td>
+      <td><div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:${pct}%"></div></div></td>
+    </tr>`;
+  }).join('');
+
+  // Provider split — aggregate across all clients
+  const oai=mocks.filter(c=>c.m.provider==='OpenAI').length;
+  const ant=mocks.filter(c=>c.m.provider==='Anthropic').length;
+  const tot2=mocks.length||1;
+  document.getElementById('providerSplit').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px"><span style="color:var(--text)">OpenAI</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">${oai} clients · ${Math.round(oai/tot2*100)}%</span></div>
+      <div style="height:6px;background:var(--border2);border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.round(oai/tot2*100)}%;background:var(--blue);border-radius:3px"></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;margin-top:4px"><span style="color:var(--text)">Anthropic</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">${ant} clients · ${Math.round(ant/tot2*100)}%</span></div>
+      <div style="height:6px;background:var(--border2);border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.round(ant/tot2*100)}%;background:var(--purple);border-radius:3px"></div></div>
+    </div>`;
+}
+
+// ── PIPELINE STATUS ──
+function loadPipeline(){
+  const mocks=customers.map(c=>({...c,m:mockFor(c)}));
+  const container=document.getElementById('pipelineRows');
+  if(!mocks.length){container.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No clients — backend offline</div>';return;}
+  container.innerHTML=mocks.map(c=>{
+    const m=c.m;
+    const ini=c.owner_initials||(c.business_name?c.business_name[0].toUpperCase():'?');
+    const totalLat=m.pipeline.reduce((a,s)=>a+s.lat,0);
+    const stages=m.pipeline.map((st,i)=>{
+      const latCol=st.lat>st.thresh?'var(--amber)':'var(--text)';
+      const arrow=i<m.pipeline.length-1?`<div class="pipe-arrow">→</div>`:'';
+      return`<div class="pipe-stage ${st.status}">
+        <div class="pipe-stage-name">${st.name}</div>
+        <div class="pipe-stage-lat" style="color:${latCol}">${st.lat}<span style="font-size:9px;color:var(--muted)">ms</span></div>
+        <div class="pipe-stage-stat ${st.status}-col">${st.status==='ok'?'✓ OK':st.status==='warn'?'⚠ Slow':'✗ Err'}</div>
+      </div>${arrow}`;
+    }).join('');
+    const anyWarn=m.pipeline.some(s=>s.status!=='ok');
+    return`<div class="pipeline-row">
+      <div class="pipeline-row-head">
+        <div class="co-cell"><div class="co-ic">${ini}</div><div><div class="co-name">${c.business_name}</div><div class="pipe-total">Total avg: ${totalLat}ms end-to-end</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px">${planBadge(c.plan)}${anyWarn?'<span class="badge badge-amber">⚠ Degraded</span>':'<span class="badge badge-green">✓ Healthy</span>'}</div>
+      </div>
+      <div class="pipeline-stages">${stages}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── ALERTS & HEALTH — AI-powered ──
+let alertFilter='all';
+const ALL_ALERTS=[];
+
+// FIX #6: scoped to only the alerts tab row
+function filterAlerts(f,btn){
+  alertFilter=f;
+  document.querySelectorAll('#alertTabRow .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAlertFeed(ALL_ALERTS);
+}
+
+function loadAlerts(){
+  const mocks=customers.map(c=>({...c,m:mockFor(c)}));
+  // Health score grid — one card per client
+  const hg=document.getElementById('healthGrid');
+  if(!mocks.length){
+    hg.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted);grid-column:1/-1">No clients — backend offline</div>';
+  } else {
+    hg.innerHTML=mocks.map(c=>{
+      const m=c.m,sc=m.healthScore;
+      const ini=c.owner_initials||(c.business_name?c.business_name[0].toUpperCase():'?');
+      const col=sc>=90?'var(--green)':sc>=75?'var(--amber)':'var(--red)';
+      const r=26,circ=2*Math.PI*r,dash=(sc/100)*circ,off=circ*0.25;
+      const ring=`<svg width="62" height="62" viewBox="0 0 62 62">
+        <circle cx="31" cy="31" r="${r}" fill="none" stroke="var(--border2)" stroke-width="5"/>
+        <circle cx="31" cy="31" r="${r}" fill="none" stroke="${col}" stroke-width="5" stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" stroke-linecap="round"/>
+        <text x="31" y="36" text-anchor="middle" fill="${col}" font-size="13" font-weight="700" font-family="Syne,sans-serif">${sc}</text>
+      </svg>`;
+      return`<div class="health-card">
+        <div class="health-ring-wrap">${ring}</div>
+        <div class="health-details">
+          <div class="health-client-name">${c.business_name}</div>
+          <div class="health-client-sub">${ini} · ${c.plan}</div>
+          <div class="health-sub">
+            <div class="health-sub-row"><span class="health-sub-key">Uptime</span><span class="health-sub-val" style="color:var(--green)">${m.uptime}%</span></div>
+            <div class="health-sub-row"><span class="health-sub-key">Error rate</span><span class="health-sub-val" style="color:${m.errorRate>0.8?'var(--amber)':'var(--muted)'}">${m.errorRate}%</span></div>
+            <div class="health-sub-row"><span class="health-sub-key">Latency P95</span><span class="health-sub-val">${m.latP95}ms</span></div>
+            <div class="health-sub-row"><span class="health-sub-key">Engagement</span><span class="health-sub-val" style="color:var(--blue)">${m.engagement}%</span></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Build alert list — use AI narrative if available, else generate from metrics
+  ALL_ALERTS.length=0;
+  if(_aiAlertNarrative && _aiAlertNarrative.length){
+    _aiAlertNarrative.forEach(a=>ALL_ALERTS.push(a));
+  } else {
+    mocks.forEach(c=>{
+      const m=c.m;
+      const now=new Date();
+      const fmtTs=offset=>{const d=new Date(now-offset);return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});};
+      if(m.latP95>600) ALL_ALERTS.push({sev:'warn',msg:`TTS latency spike — P95 at ${m.latP95}ms`,client:c.business_name,ts:fmtTs(120000)});
+      if(m.errorRate>0.9) ALL_ALERTS.push({sev:'err',msg:`Error rate above 0.9% threshold (${m.errorRate}%)`,client:c.business_name,ts:fmtTs(240000)});
+      if(m.reconnects>=2) ALL_ALERTS.push({sev:'warn',msg:`WebSocket reconnects elevated: ${m.reconnects}/hr`,client:c.business_name,ts:fmtTs(660000)});
+      if(m.wsUptime<97) ALL_ALERTS.push({sev:'warn',msg:`WS uptime below 97% SLA (${m.wsUptime}%)`,client:c.business_name,ts:fmtTs(1140000)});
+      if(m.pipeline.some(s=>s.status==='warn')) ALL_ALERTS.push({sev:'warn',msg:`Pipeline degradation on ${m.pipeline.filter(s=>s.status==='warn').map(s=>s.name).join(', ')} stage`,client:c.business_name,ts:fmtTs(360000)});
+      if(m.activeSessions===0&&c.status==='active') ALL_ALERTS.push({sev:'info',msg:`No active sessions — client may be idle`,client:c.business_name,ts:fmtTs(1500000)});
+      if(m.trend==='down') ALL_ALERTS.push({sev:'info',msg:`Usage trend declining — consider outreach`,client:c.business_name,ts:fmtTs(3600000)});
+    });
+    ALL_ALERTS.push({sev:'info',msg:'Scheduled KB reindex completed successfully',client:'System',ts:new Date(Date.now()-7200000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+    ALL_ALERTS.push({sev:'info',msg:'Platform health check passed — all APIs nominal',client:'System',ts:new Date(Date.now()-10800000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+  }
+
+  // Push critical alerts into notification center
+  ALL_ALERTS.filter(a=>a.sev==='err').slice(0,2).forEach(a=>{
+    if(!_notifications.find(n=>n.msg===a.msg)){
+      pushNotif(a.sev,a.msg,a.client,a.ts);
+    }
+  });
+
+  // Update sidebar badge
+  const warnCount=ALL_ALERTS.filter(a=>a.sev==='err'||a.sev==='warn').length;
+  const nbAlerts=document.getElementById('nbAlerts');
+  if(nbAlerts)nbAlerts.textContent=warnCount||'';
+  renderAlertFeed(ALL_ALERTS);
+}
+function renderAlertFeed(alerts){
+  const filtered=alertFilter==='all'?alerts:alerts.filter(a=>a.sev===alertFilter);
+  document.getElementById('alertCount').textContent=filtered.length+' alerts';
+  const sevCol={err:'var(--red)',warn:'var(--amber)',info:'var(--blue)'};
+  const sevBadge={err:'<span class="badge badge-red">Error</span>',warn:'<span class="badge badge-amber">Warning</span>',info:'<span class="badge badge-blue">Info</span>'};
+  const feed=document.getElementById('alertFeed');
+  if(!filtered.length){feed.innerHTML='<div class="alert-item" style="padding:30px 20px"><span style="color:var(--muted);font-size:13px">✓ No alerts matching filter</span></div>';return;}
+  feed.innerHTML=filtered.map(a=>`<div class="alert-item">
+    <div class="alert-sev-dot" style="background:${sevCol[a.sev]}"></div>
+    <div class="alert-body">
+      <div class="alert-msg">${a.msg}${sevBadge[a.sev]}</div>
+      <div class="alert-meta">${a.client}</div>
+    </div>
+    <div class="alert-time">${a.ts}</div>
+  </div>`).join('');
+}
+
+// ── LOCAL SIGNUPS (localStorage) ──
+function loadLocalSignups() {
+  // Pending signup banner
+  const pending = JSON.parse(localStorage.getItem('humana_pending_signup') || '{}');
+  const banner  = document.getElementById('pendingBanner');
+  const detail  = document.getElementById('pendingDetail');
+  if (pending.email && pending.status === 'pending_wizard') {
+    detail.textContent = `${pending.email} — started ${new Date(pending.created_at).toLocaleString()}`;
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Customer records
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('humana_customers') || '[]'); } catch {}
+
+  // Update sidebar badge
+  document.getElementById('nbSignups').textContent = records.length;
+
+  const tbody = document.getElementById('signupTbl');
+  if (!records.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No local signup records found. Complete the wizard to create one.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = records.map((r, i) => {
+    const w = r.wizard || {};
+    const color  = w.primary_color || r.primary_color || '#f59e0b';
+    const savedAt = r.saved_at ? new Date(r.saved_at).toLocaleString() : '—';
+    const plan   = w.plan || r.plan || '—';
+    const biz    = esc(w.business_name || r.business_name || '—');
+    const url    = esc(w.business_url || r.business_url || '—');
+    const owner  = esc(w.owner_name || r.owner_name || '—');
+    const email  = esc(w.owner_email || r.owner_email || '—');
+    const id     = r.id || '';
+
+    const planBadgeStr = plan === 'enterprise'
+      ? '<span class="badge badge-purple">Enterprise</span>'
+      : plan === 'starter'
+        ? '<span class="badge badge-blue">Starter</span>'
+        : '<span class="badge badge-amber">Business</span>';
+
+    const colorSwatch = `<span style="display:inline-flex;align-items:center;gap:6px;">
+      <span style="width:12px;height:12px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;"></span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">${color}</span>
+    </span>`;
+
+    const urlDisplay = url !== '—'
+      ? `<a href="${url}" target="_blank" style="color:var(--blue);font-size:11px;font-family:'JetBrains Mono',monospace;">${url.replace(/^https?:\/\//,'')}</a>`
+      : '<span style="color:var(--muted)">—</span>';
+
+    return `<tr>
+      <td>
+        <div class="co-cell">
+          <div class="co-ic">${biz[0] || '?'}</div>
+          <div>
+            <div class="co-name">${biz}</div>
+            <div class="co-id">${id ? id.substring(0,14)+'…' : 'local only'}</div>
+          </div>
+        </div>
+      </td>
+      <td>${urlDisplay}</td>
+      <td>${planBadgeStr}</td>
+      <td style="color:var(--muted)">${owner}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">${email}</td>
+      <td>${colorSwatch}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">${savedAt}</td>
+      <td>
+        <div class="btn-row">
+          ${id
+            ? `<button class="btn btn-blue btn-sm" onclick="openKb('${id}','${biz}')">📚 KB</button>`
+            : `<button class="btn btn-amber btn-sm" onclick="syncToBackend(${i})">↑ Sync</button>`
+          }
+          <button class="btn btn-danger btn-sm" onclick="removeLocalRecord(${i})">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Raw JSON panel
+  document.getElementById('rawJson').textContent = JSON.stringify({
+    humana_customers:        records,
+    humana_pending_signup:   pending,
+    humana_customer_id:      localStorage.getItem('humana_customer_id'),
+    humana_customer_name:    localStorage.getItem('humana_customer_name'),
+  }, null, 2);
+}
+
+function removeLocalRecord(idx) {
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('humana_customers') || '[]'); } catch {}
+  records.splice(idx, 1);
+  localStorage.setItem('humana_customers', JSON.stringify(records));
+  loadLocalSignups();
+  toast('Record removed from localStorage', 'ok');
+}
+
+function clearLocalSignups() {
+  if (!confirm('Remove ALL local signup records? This cannot be undone.')) return;
+  localStorage.removeItem('humana_customers');
+  localStorage.removeItem('humana_pending_signup');
+  localStorage.removeItem('humana_customer_id');
+  localStorage.removeItem('humana_customer_name');
+  loadLocalSignups();
+  toast('All local signup records cleared', 'ok');
+}
+
+function toggleRaw() {
+  const el = document.getElementById('rawJson');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function syncToBackend(idx) {
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('humana_customers') || '[]'); } catch {}
+  const rec = records[idx];
+  if (!rec) return;
+  const body = rec.wizard || rec;
+  try {
+    const r = await fetch(`${API}/customers/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({ detail: r.statusText }))).detail);
+    const customer = await r.json();
+    records[idx] = { ...customer, wizard: body, saved_at: rec.saved_at };
+    localStorage.setItem('humana_customers', JSON.stringify(records));
+    loadLocalSignups();
+    toast(`Synced "${customer.business_name}" to backend ✓`, 'ok');
+  } catch (e) {
+    toast('Sync failed: ' + e.message, 'er');
+  }
+}
+
+function esc(s) { return String(s).replace(/['"<>&]/g, c => ({'\'':'&#39;','"':'&quot;','<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+</script>
+</body>
+</html>

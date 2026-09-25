@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HUMANA — Enterprise AI Human Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #0c0e12;
+  --panel:    #12151b;
+  --card:     #181c24;
+  --border:   #1e2330;
+  --border2:  #2a3040;
+  --text:     #e8eaf0;
+  --muted:    #6b7385;
+  --amber:    #f59e0b;
+  --amber-d:  #f59e0b22;
+  --amber-m:  #f59e0b55;
+  --green:    #10b981;
+  --green-d:  #10b98122;
+  --red:      #ef4444;
+  --red-d:    #ef444422;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── LOGIN MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.modal-bg.open{display:flex;}
+.lm{background:#12151b;border:1px solid #2a3040;border-radius:10px;width:420px;max-width:95vw;padding:36px;}
+.lm-logo{width:40px;height:40px;background:var(--amber);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#000;margin:0 auto 16px;}
+.lm-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;text-align:center;margin-bottom:4px;}
+.lm-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px;}
+.lm-tabs{display:flex;border-bottom:1px solid var(--border2);margin-bottom:24px;}
+.lm-tab{flex:1;padding:8px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;font-family:'Syne',sans-serif;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;}
+.lm-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
+.lm-tab-pane{display:none;}.lm-tab-pane.active{display:block;}
+.lf{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.lf label{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.lf input{background:#0c0e12;border:1px solid #2a3040;color:#e8eaf0;border-radius:6px;padding:10px 14px;font-size:13px;font-family:'Lato',sans-serif;outline:none;transition:.2s;}
+.lf input:focus{border-color:var(--amber-m);}
+.lm-btn{width:100%;padding:11px;background:var(--amber);color:#000;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:.05em;border:none;border-radius:6px;cursor:pointer;transition:.15s;margin-top:4px;}
+.lm-btn:hover{opacity:.88;}.lm-btn:disabled{opacity:.4;cursor:not-allowed;}
+.lm-err{color:var(--red);font-size:12px;margin-top:8px;display:none;}
+.lm-suc{color:var(--green);font-size:12px;margin-top:8px;display:none;}
+.lm-or{text-align:center;font-size:11px;color:var(--muted);margin:14px 0;}
+.lm-close{position:absolute;top:14px;right:18px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;}
+.lm-wrap{position:relative;}
+.lm-google{width:100%;padding:10px;background:transparent;border:1px solid #2a3040;color:#e8eaf0;font-size:13px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:.15s;font-family:'Lato',sans-serif;}
+.lm-google:hover{border-color:#4a5568;background:#1a1d24;}
+.lm-footer{margin-top:20px;text-align:center;font-size:12px;color:var(--muted);
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── TYPOGRAPHY ── */
+h1, h2, h3, h4 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* ── NAVIGATION ── */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 20px 48px;
+  display: flex; justify-content: space-between; align-items: center;
+  z-index: 100;
+  background: rgba(12, 14, 18, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  transition: padding 0.3s;
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none; color: var(--text);
+}
+.logo-mark {
+  width: 36px; height: 36px;
+  background: var(--amber); color: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
+}
+.brand-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.1em; }
+.nav-links { display: flex; gap: 40px; }
+.nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); }
+.nav-actions { display: flex; gap: 16px; align-items: center; }
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase; text-decoration: none;
+  padding: 12px 28px; cursor: pointer; border: none; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+}
+.btn-amber { background: var(--amber); color: var(--bg); }
+.btn-amber:hover { background: #fbbf24; transform: translateY(-2px); box-shadow: 0 4px 15px var(--amber-m); }
+.btn-ghost { background: transparent; color: var(--text); }
+.btn-ghost:hover { color: var(--amber); }
+
+/* ── HERO SECTION ── */
+.hero {
+  min-height: 100vh;
+  padding: 160px 48px 80px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  align-items: center; gap: 64px;
+  position: relative;
+}
+.hero-bg {
+  position: absolute; top: -100px; right: -100px;
+  width: 800px; height: 800px;
+  background: radial-gradient(circle, var(--amber-d) 0%, transparent 60%);
+  z-index: -1; filter: blur(40px);
+}
+.hero-content h1 {
+  font-size: 72px; letter-spacing: -0.02em; margin-bottom: 24px;
+}
+.hero-content p {
+  font-size: 20px; color: var(--muted); margin-bottom: 40px; max-width: 500px;
+}
+.hero-cta { display: flex; gap: 20px; }
+
+/* ── AVATAR DISPLAY ── */
+.avatar-showcase {
+  position: relative; height: 600px;
+  display: flex; justify-content: center; align-items: center;
+}
+.avatar-ring {
+  position: absolute;
+  width: 450px; height: 450px;
+  border: 1px solid var(--border2); border-radius: 50%;
+  animation: spin 30s linear infinite;
+}
+.avatar-ring::before {
+  content: ''; position: absolute;
+  top: -4px; left: 50%; transform: translateX(-50%);
+  width: 8px; height: 8px; border-radius: 50%; background: var(--amber);
+  box-shadow: 0 0 15px var(--amber);
+}
+.avatar-ring-2 {
+  position: absolute;
+  width: 350px; height: 350px;
+  border: 1px solid var(--amber-m); border-radius: 50%;
+  animation: spin 20s linear infinite reverse;
+}
+.avatar-img {
+  position: relative; z-index: 10;
+  width: 250px; height: 250px; border-radius: 50%;
+  background: var(--card); border: 2px solid var(--amber);
+  box-shadow: 0 0 40px var(--amber-m);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+/* Abstract representation of a digital human instead of placeholder image */
+.digital-face {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, var(--card) 0%, #20242f 100%);
+  position: relative;
+}
+.digital-wave {
+  position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%);
+  height: 60px; display: flex; justify-content: space-evenly; align-items: center;
+}
+.digital-wave span {
+  width: 6px; background: var(--amber); border-radius: 3px;
+  animation: waveform 1s infinite alternate ease-in-out;
+}
+.digital-wave span:nth-child(1) { height: 20px; animation-delay: 0.1s; }
+.digital-wave span:nth-child(2) { height: 40px; animation-delay: 0.3s; }
+.digital-wave span:nth-child(3) { height: 50px; animation-delay: 0.5s; background: #fff;}
+.digital-wave span:nth-child(4) { height: 30px; animation-delay: 0.2s; }
+.digital-wave span:nth-child(5) { height: 25px; animation-delay: 0.4s; }
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes waveform { 0% { height: 10px; } 100% { height: 50px; } }
+
+/* ── MARQUEE / LOGOS ── */
+.marquee-container {
+  padding: 40px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  background: #090a0d; overflow: hidden; display: flex;
+}
+.marquee {
+  display: flex; gap: 80px; min-width: 100%; align-items: center; justify-content: center;
+  animation: scroll-left 40s linear infinite;
+}
+.marquee div {
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--dim);
+  text-transform: uppercase; font-weight: 500; letter-spacing: 0.15em;
+}
+@keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+/* ── FEATURES GRID ── */
+.features {
+  padding: 120px 48px;
+  max-width: 1400px; margin: 0 auto;
+}
+.section-head { text-align: center; margin-bottom: 80px; }
+.accent-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--amber);
+  text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px; display: block;
+}
+.section-head h2 { font-size: 48px; margin-bottom: 24px; }
+
+.grid-3 {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+}
+.feature-card {
+  background: var(--card); border: 1px solid var(--border);
+  padding: 40px; transition: transform 0.3s, border-color 0.3s;
+}
+.feature-card:hover {
+  transform: translateY(-5px); border-color: var(--amber-m);
+}
+.feature-icon {
+  font-size: 32px; color: var(--amber); margin-bottom: 24px;
+}
+.feature-card h3 { font-size: 20px; margin-bottom: 12px; }
+.feature-card p { color: var(--muted); font-size: 15px; }
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 80px 48px 40px;
+  background: #090a0d;
+}
+.footer-grid {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 64px;
+  max-width: 1400px; margin: 0 auto 60px;
+}
+.footer-col h4 { margin-bottom: 24px; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; }
+.footer-col ul { list-style: none; }
+.footer-col ul li { margin-bottom: 12px; }
+.footer-col a { color: var(--muted); text-decoration: none; font-size: 15px; transition: color 0.2s; }
+.footer-col a:hover { color: var(--amber); }
+
+.copy { text-align: center; color: var(--dim); font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+
+@media (max-width: 1024px) {
+  .hero { grid-template-columns: 1fr; text-align: center; padding-top: 120px; }
+  .hero-content p { margin: 0 auto 40px; }
+  .hero-cta { justify-content: center; }
+  .nav-links { display: none; }
+  .grid-3 { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; gap: 40px; }
+}
+</style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="#" class="nav-brand">
+      <div class="logo-mark">H</div>
+      <div class="brand-name">HUMANA</div>
+    </a>
+    <div class="nav-links">
+      <a href="#platform">Platform</a>
+      <a href="#solutions">Solutions</a>
+      <a href="#pricing">Pricing</a>
+      <a href="humana-docs.html">Documentation</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-ghost" onclick="openModal('login')">Login</button>
+      <button class="btn btn-amber" onclick="openSignup()">Get Started</button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <span class="accent-label">The Future of Client Interaction</span>
+      <h1>Deploy a Digital Human in Minutes.</h1>
+      <p>Transform your customer experience with an AI agent that can see, hear, and speak with human-like empathy. Integrated instantly into your existing tools.</p>
+      <div class="hero-cta">
+        <button onclick="openSignup()" class="btn btn-amber">Start Free Trial ◈</button>
+        <a href="#demo" class="btn btn-ghost">Watch Demo</a>
+      </div>
+    </div>
+    <div class="avatar-showcase">
+      <div class="avatar-ring"></div>
+      <div class="avatar-ring-2"></div>
+      <div class="avatar-img">
+        <div class="digital-face">
+          <div class="digital-wave">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee-container">
+    <div class="marquee">
+      <div>Healthcare</div><div>Real Estate</div><div>E-Commerce</div><div>Finance</div><div>Education</div>
+      <!-- Duplicate for scrolling -->
+      <div>Healthcare</div><div>Real Estate</div><div>E-Commerce</div><div>Finance</div><div>Education</div>
+      <div>Healthcare</div><div>Real Estate</div><div>E-Commerce</div><div>Finance</div><div>Education</div>
+    </div>
+  </div>
+
+  <section class="features" id="platform">
+    <div class="section-head">
+      <span class="accent-label">Platform Capabilities</span>
+      <h2>Beyond Text Chatbots</h2>
+    </div>
+    <div class="grid-3">
+      <div class="feature-card">
+        <div class="feature-icon">👁️</div>
+        <h3>Vision & Context</h3>
+        <p>Your digital human can see users via webcam (with permission) and react to facial expressions, improving empathetic response.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Ultra-Low Latency</h3>
+        <p>Powered by optimized WebRTC and Edge node processing, maintaining response times under 400ms for natural conversation overlap.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <h3>Deep Integrations</h3>
+        <p>Direct API connections into Salesforce, HubSpot, and EMR systems. Your avatar can book meetings and update records mid-conversation.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>Infinite Memory</h3>
+        <p>Vector-database driven recall. The agent remembers past interactions, user preferences, and business context forever.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h3>Fully Customizable</h3>
+        <p>Control visual appearance, tone of voice, knowledge boundaries, and brand alignment through our intuitive builder wizard.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Enterprise Security</h3>
+        <p>SOC2 compliant, HIPAA-ready infrastructure with end-to-end encryption for audio and video data streams.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
+  <section id="how" style="padding:120px 48px; background:#090a0d; border-top:1px solid var(--border);">
+    <div style="max-width:1100px;margin:0 auto;">
+      <div class="section-head">
+        <span class="accent-label">Simple Setup</span>
+        <h2>From Zero to Live in 10 Minutes</h2>
+        <p style="color:var(--muted);font-size:17px;max-width:520px;margin:0 auto;">No AI expertise required. Our wizard handles everything.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative;margin-top:64px;">
+        <!-- connector line -->
+        <div style="position:absolute;top:28px;left:12.5%;right:12.5%;height:1px;background:linear-gradient(90deg,var(--amber),var(--amber-m),transparent);z-index:0;"></div>
+        <div style="text-align:center;padding:0 20px;position:relative;z-index:1;">
+          <div style="width:56px;height:56px;background:var(--amber);color:#000;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">1</div>
+          <h4 style="font-family:'Syne',sans-serif;font-size:16px;margin-bottom:12px;">Create Account</h4>
+          <p style="color:var(--muted);font-size:14px;line-height:1.6;">Sign up with your email in under 30 seconds. No credit card required.</p>
+        </div>
+        <div style="text-align:center;padding:0 20px;position:relative;z-index:1;">
+          <div style="width:56px;height:56px;background:var(--card);border:1px solid var(--amber);color:var(--amber);font-family:'Syne',sans-serif;font-weight:800;font-size:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">2</div>
+          <h4 style="font-family:'Syne',sans-serif;font-size:16px;margin-bottom:12px;">Configure Avatar</h4>
+          <p style="color:var(--muted);font-size:14px;line-height:1.6;">Name your agent, choose its voice, set your brand color, and craft its welcome message.</p>
+        </div>
+        <div style="text-align:center;padding:0 20px;position:relative;z-index:1;">
+          <div style="width:56px;height:56px;background:var(--card);border:1px solid var(--amber-m);color:var(--muted);font-family:'Syne',sans-serif;font-weight:800;font-size:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">3</div>
+          <h4 style="font-family:'Syne',sans-serif;font-size:16px;margin-bottom:12px;">Upload Knowledge</h4>
+          <p style="color:var(--muted);font-size:14px;line-height:1.6;">Drop in PDFs, paste FAQs, or connect your website. Your agent learns your business instantly.</p>
+        </div>
+        <div style="text-align:center;padding:0 20px;position:relative;z-index:1;">
+          <div style="width:56px;height:56px;background:var(--card);border:1px solid var(--border2);color:var(--muted);font-family:'Syne',sans-serif;font-weight:800;font-size:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">4</div>
+          <h4 style="font-family:'Syne',sans-serif;font-size:16px;margin-bottom:12px;">Embed & Go Live</h4>
+          <p style="color:var(--muted);font-size:14px;line-height:1.6;">Copy one line of code. Your digital human is live on your website, app, or kiosk.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ SOLUTIONS ═══════════════════ -->
+  <section id="solutions" style="padding:120px 48px;">
+    <div style="max-width:1100px;margin:0 auto;">
+      <div class="section-head">
+        <span class="accent-label">Built For Every Industry</span>
+        <h2>Your Sector. Your Rules.</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:64px;">
+        <div style="background:var(--card);border:1px solid var(--border);padding:36px;position:relative;overflow:hidden;transition:.3s;" onmouseover="this.style.borderColor='var(--amber-m)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="position:absolute;top:-20px;right:-20px;font-size:80px;opacity:.04;">🏥</div>
+          <div style="font-size:36px;margin-bottom:20px;">🏥</div>
+          <h3 style="font-family:'Syne',sans-serif;font-size:20px;margin-bottom:12px;">Healthcare</h3>
+          <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px;">HIPAA-ready avatars handle patient intake, appointment booking, medication reminders, and post-visit follow-ups — 24/7.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">Patient Intake</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">Scheduling</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">HIPAA Compliant</span>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);padding:36px;position:relative;overflow:hidden;transition:.3s;" onmouseover="this.style.borderColor='var(--amber-m)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="position:absolute;top:-20px;right:-20px;font-size:80px;opacity:.04;">🏠</div>
+          <div style="font-size:36px;margin-bottom:20px;">🏠</div>
+          <h3 style="font-family:'Syne',sans-serif;font-size:20px;margin-bottom:12px;">Real Estate</h3>
+          <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px;">Virtual property tours, instant valuation estimates, mortgage pre-qualification, and lead nurturing that works while you sleep.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">Virtual Tours</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">Lead Nurture</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">CRM Sync</span>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);padding:36px;position:relative;overflow:hidden;transition:.3s;" onmouseover="this.style.borderColor='var(--amber-m)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="position:absolute;top:-20px;right:-20px;font-size:80px;opacity:.04;">💳</div>
+          <div style="font-size:36px;margin-bottom:20px;">💳</div>
+          <h3 style="font-family:'Syne',sans-serif;font-size:20px;margin-bottom:12px;">Finance & Banking</h3>
+          <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px;">Explain complex products, guide loan applications, answer account queries, and onboard new clients with regulatory compliance baked in.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">KYC Ready</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">Loan Assist</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">24/7 Support</span>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);padding:36px;position:relative;overflow:hidden;transition:.3s;" onmouseover="this.style.borderColor='var(--amber-m)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="position:absolute;top:-20px;right:-20px;font-size:80px;opacity:.04;">🛒</div>
+          <div style="font-size:36px;margin-bottom:20px;">🛒</div>
+          <h3 style="font-family:'Syne',sans-serif;font-size:20px;margin-bottom:12px;">E-Commerce</h3>
+          <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px;">Personal shopping assistant that recommends products, handles returns, tracks orders, and upsells — all in a natural conversation.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">Product Rec</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">Order Track</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">Shopify API</span>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);padding:36px;position:relative;overflow:hidden;transition:.3s;" onmouseover="this.style.borderColor='var(--amber-m)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="position:absolute;top:-20px;right:-20px;font-size:80px;opacity:.04;">🎓</div>
+          <div style="font-size:36px;margin-bottom:20px;">🎓</div>
+          <h3 style="font-family:'Syne',sans-serif;font-size:20px;margin-bottom:12px;">Education</h3>
+          <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px;">AI tutors that adapt to each student's pace, answer curriculum questions, guide enrolment, and provide 24/7 academic support.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">Adaptive</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">LMS Connect</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">Multilingual</span>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);padding:36px;position:relative;overflow:hidden;transition:.3s;" onmouseover="this.style.borderColor='var(--amber-m)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="position:absolute;top:-20px;right:-20px;font-size:80px;opacity:.04;">🏨</div>
+          <div style="font-size:36px;margin-bottom:20px;">🏨</div>
+          <h3 style="font-family:'Syne',sans-serif;font-size:20px;margin-bottom:12px;">Hospitality</h3>
+          <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px;">Concierge avatars handle reservations, local recommendations, check-in assistance, and guest requests across 40+ languages.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">Reservations</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">40+ Languages</span>
+            <span style="font-size:11px;background:var(--amber-d);color:var(--amber);padding:4px 10px;border-radius:2px;font-family:'JetBrains Mono',monospace;">PMS Sync</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ STATS BAR ═══════════════════ -->
+  <div style="background:#090a0d;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:60px 48px;">
+    <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center;">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--amber);line-height:1;">400<span style="font-size:24px;">ms</span></div>
+        <div style="color:var(--muted);font-size:14px;margin-top:8px;">Average response latency</div>
+      </div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--amber);line-height:1;">40<span style="font-size:24px;">+</span></div>
+        <div style="color:var(--muted);font-size:14px;margin-top:8px;">Languages supported</div>
+      </div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--amber);line-height:1;">99.9<span style="font-size:24px;">%</span></div>
+        <div style="color:var(--muted);font-size:14px;margin-top:8px;">Uptime SLA</div>
+      </div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--amber);line-height:1;">10<span style="font-size:24px;">min</span></div>
+        <div style="color:var(--muted);font-size:14px;margin-top:8px;">Average time to deploy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ PRICING ═══════════════════ -->
+  <section id="pricing" style="padding:120px 48px;">
+    <div style="max-width:1100px;margin:0 auto;">
+      <div class="section-head">
+        <span class="accent-label">Simple Pricing</span>
+        <h2>No Hidden Fees. Ever.</h2>
+        <p style="color:var(--muted);font-size:17px;margin-top:16px;">Start free. Scale when you're ready.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:64px;align-items:start;">
+        <!-- STARTER -->
+        <div style="background:var(--card);border:1px solid var(--border);padding:40px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;">Starter</div>
+          <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:800;line-height:1;margin-bottom:8px;">$0</div>
+          <div style="color:var(--muted);font-size:14px;margin-bottom:32px;">Free forever · No credit card</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:40px;">
+            <li style="font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> 1 Digital Human avatar</li>
+            <li style="font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> 500 conversations / month</li>
+            <li style="font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> 3 knowledge base files</li>
+            <li style="font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> Embed widget</li>
+            <li style="font-size:14px;color:var(--dim);display:flex;gap:10px;align-items:flex-start;"><span style="margin-top:2px;">✗</span> Custom branding</li>
+            <li style="font-size:14px;color:var(--dim);display:flex;gap:10px;align-items:flex-start;"><span style="margin-top:2px;">✗</span> API access</li>
+          </ul>
+          <button onclick="openSignup()" style="width:100%;padding:14px;background:transparent;border:1px solid var(--border2);color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:.15s;" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">Get Started Free</button>
+        </div>
+        <!-- BUSINESS -->
+        <div style="background:var(--panel);border:2px solid var(--amber);padding:40px;position:relative;">
+          <div style="position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--amber);color:#000;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;padding:4px 16px;white-space:nowrap;">MOST POPULAR</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;">Business</div>
+          <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:800;line-height:1;margin-bottom:8px;">$99<span style="font-size:20px;font-weight:400;color:var(--muted)">/mo</span></div>
+          <div style="color:var(--muted);font-size:14px;margin-bottom:32px;">Billed monthly · Cancel anytime</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:40px;">
+            <li style="font-size:14px;color:var(--text);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> 5 Digital Human avatars</li>
+            <li style="font-size:14px;color:var(--text);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> 10,000 conversations / month</li>
+            <li style="font-size:14px;color:var(--text);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> Unlimited knowledge base</li>
+            <li style="font-size:14px;color:var(--text);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> Custom branding + domain</li>
+            <li style="font-size:14px;color:var(--text);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> Full API access</li>
+            <li style="font-size:14px;color:var(--text);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> Priority email support</li>
+          </ul>
+          <button onclick="openSignup()" style="width:100%;padding:14px;background:var(--amber);border:none;color:#000;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:.15s;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">Start 14-Day Trial →</button>
+        </div>
+        <!-- ENTERPRISE -->
+        <div style="background:var(--card);border:1px solid var(--border);padding:40px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;">Enterprise</div>
+          <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:800;line-height:1;margin-bottom:8px;">Custom</div>
+          <div style="color:var(--muted);font-size:14px;margin-bottom:32px;">Volume pricing · SLA guaranteed</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:40px;">
+            <li style="font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> Unlimited avatars</li>
+            <li style="font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> Unlimited conversations</li>
+            <li style="font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> White-label deployment</li>
+            <li style="font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> On-premise option</li>
+            <li style="font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> Dedicated account manager</li>
+            <li style="font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--amber);margin-top:2px;">✓</span> SOC2 + HIPAA audit reports</li>
+          </ul>
+          <button onclick="window.location.href='mailto:enterprise@humana.ai'" style="width:100%;padding:14px;background:transparent;border:1px solid var(--border2);color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:.15s;" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">Contact Sales</button>
+        </div>
+      </div>
+      <p style="text-align:center;color:var(--dim);font-size:13px;margin-top:32px;font-family:'JetBrains Mono',monospace;">All plans include SSL, global CDN, and 99.9% uptime SLA.</p>
+    </div>
+  </section>
+
+  
+  <!-- ═══════════════════ FINAL CTA ═══════════════════ -->
+  <section style="padding:120px 48px;text-align:center;position:relative;overflow:hidden;" id="demo">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,var(--amber-d) 0%,transparent 65%);z-index:0;"></div>
+    <div style="position:relative;z-index:1;max-width:700px;margin:0 auto;">
+      <span class="accent-label">Deploy Today</span>
+      <h2 style="font-size:56px;line-height:1.05;margin:16px 0 24px;">Your Digital Human<br>is Waiting.</h2>
+      <p style="color:var(--muted);font-size:18px;margin-bottom:48px;line-height:1.6;">Join the businesses already running 24/7 with AI agents that see, hear, and speak with human-like intelligence.</p>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+        <button onclick="openSignup()" style="background:var(--amber);color:#000;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:16px 40px;border:none;cursor:pointer;transition:.15s;" onmouseover="this.style.background='#fbbf24'" onmouseout="this.style.background='var(--amber)'">Start Free — No Card Required ◈</button>
+        <button onclick="window.location.href='mailto:enterprise@humana.ai'" style="background:transparent;color:var(--text);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:16px 40px;border:1px solid var(--border2);cursor:pointer;transition:.15s;" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)'">Talk to Enterprise Sales</button>
+      </div>
+      <p style="color:var(--dim);font-size:12px;margin-top:24px;font-family:'JetBrains Mono',monospace;">No credit card · 14-day Business trial · Cancel anytime</p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="#" class="nav-brand" style="margin-bottom: 24px; display: inline-flex;">
+          <div class="logo-mark">H</div>
+          <div class="brand-name">HUMANA</div>
+        </a>
+        <p style="color: var(--muted); font-size: 14px; max-width: 280px;">The leading platform for deploying empathetic, intelligent visual AI agents for business.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#">Voice API</a></li>
+          <li><a href="#">Vision Capabilities</a></li>
+          <li><a href="#">Integrations</a></li>
+          <li><a href="#">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="humana-docs.html">Documentation</a></li>
+          <li><a href="#">Quickstarts</a></li>
+          <li><a href="#">API Reference</a></li>
+          <li><a href="#">Community</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="copy">
+      © 2026 HUMANA Inc. All rights reserved. System Status: ALL SYSTEMS OPERATIONAL.
+    </div>
+  </footer>
+
+<!-- LOGIN MODAL -->
+<div class="modal-bg" id="loginModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="lm lm-wrap">
+    <button class="lm-close" onclick="document.getElementById('loginModal').classList.remove('open')">✕</button>
+    <div class="lm-logo">H</div>
+    <div class="lm-title">Welcome Back</div>
+    <div class="lm-sub">Sign in to your HUMANA dashboard</div>
+    <div class="lm-tabs">
+      <div class="lm-tab active" onclick="switchTab('login')">Log In</div>
+      <div class="lm-tab" onclick="switchTab('signup')">New Account</div>
+    </div>
+    <!-- LOGIN TAB -->
+    <div class="lm-tab-pane active" id="tab-login">
+      <div class="lm-google" onclick="googleSignIn()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continue with Google
+      </div>
+      <div class="lm-or">— or sign in with email —</div>
+      <div class="lf"><label>Email Address</label><input type="email" id="loginEmail" placeholder="you@company.com" onkeydown="if(event.key==='Enter')doLogin()" autocomplete="off"/></div>
+      <div class="lf" id="loginPassWrap"><label>Password</label><input type="password" id="loginPass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()" autocomplete="new-password"/></div>
+      <button class="lm-btn" id="loginBtn" onclick="doLogin()">Sign In →</button>
+      <div class="lm-err" id="loginErr"></div>
+      <div class="lm-footer">Don't have an account? <a href="#" onclick="switchTab('signup')" style="color:var(--amber)">Get started free</a></div>
+    </div>
+    <!-- SIGNUP TAB -->
+    <div class="lm-tab-pane" id="tab-signup">
+      <div class="lm-google" onclick="googleSignUp()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Sign up with Google
+      </div>
+      <div class="lm-or">— or enter your email —</div>
+      <div class="lf"><label>Email Address</label><input type="email" id="signupEmail" placeholder="you@company.com" autocomplete="off"/></div>
+      <div class="lf"><label>Password</label><input type="password" id="signupPass" placeholder="Min 8 characters" autocomplete="new-password"/></div>
+      <div class="lf"><label>Confirm Password</label><input type="password" id="signupPass2" placeholder="Repeat password" onkeydown="if(event.key==='Enter')doSignup()" autocomplete="new-password"/></div>
+      <button class="lm-btn" id="signupBtn" onclick="doSignup()">Create Account →</button>
+      <div class="lm-err" id="signupErr"></div>
+      <div class="lm-suc" id="signupSuc"></div>
+      <div class="lm-footer">Already have an account? <a href="#" style="color:var(--amber)" onclick="switchTab('login')">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API='http://localhost:8000';
+function switchTab(t){
+  document.querySelectorAll('.lm-tab').forEach((el,i)=>{el.classList.toggle('active',i===(t==='login'?0:1));});
+  document.getElementById('tab-login').classList.toggle('active',t==='login');
+  document.getElementById('tab-signup').classList.toggle('active',t==='signup');
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('signupErr').style.display='none';
+  document.getElementById('signupSuc').style.display='none';
+}
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginErr');
+  err.style.display='none';
+  if(!email){err.textContent='Enter your email.';err.style.display='block';return;}
+  if(!pass){err.textContent='Enter your password.';err.style.display='block';return;}
+  const btn=document.getElementById('loginBtn');
+  btn.disabled=true;btn.textContent='Checking…';
+  
+  // ── Admin Check ──
+  if (email.toLowerCase() === 'admin@humana.ai' || email.toLowerCase() === 'admin') {
+    window.location.href = 'humana-admin.html';
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Login failed');
+    }
+
+    const data = await response.json();
+    localStorage.setItem('humana_token', data.access_token);
+    
+    // Check if user has completed wizard
+    const userResponse = await fetch(`${API}/api/auth/me`, {
+      headers: { 'Authorization': `Bearer ${data.access_token}` }
+    });
+    const user = await userResponse.json();
+    
+    const dashboardResponse = await fetch(`${API}/api/dashboard/data`, {
+      headers: { 'Authorization': `Bearer ${data.access_token}` }
+    });
+    const dashboardData = await dashboardResponse.json();
+    
+    if (!dashboardData.has_business) {
+      sessionStorage.setItem('humana_signup_email', user.email);
+      window.location.href = 'humana-wizard.html';
+    } else {
+      window.location.href = 'humana-dashboard.html';
+    }
+  } catch (error) {
+    err.textContent = error.message;
+    err.style.display = 'block';
+  } finally {
+    btn.disabled=false;
+    btn.textContent='Sign In →';
+  }
+}
+async function doSignup(){
+  const email=document.getElementById('signupEmail').value.trim();
+  const pass=document.getElementById('signupPass').value;
+  const pass2=document.getElementById('signupPass2').value;
+  const err=document.getElementById('signupErr');
+  const suc=document.getElementById('signupSuc');
+  err.style.display='none';suc.style.display='none';
+  if(!email){err.textContent='Enter your email.';err.style.display='block';return;}
+  if(!pass||pass.length<8){err.textContent='Password must be at least 8 characters.';err.style.display='block';return;}
+  if(pass!==pass2){err.textContent='Passwords do not match.';err.style.display='block';return;}
+  
+  const btn=document.getElementById('signupBtn');
+  btn.disabled=true;btn.textContent='Checking…';
+  
+  // ── Local Check First ──
+  if (localStorage.getItem('humana_pass_'+email.toLowerCase())) {
+    err.textContent='Account exists. Use Sign In.';
+    err.style.display='block';
+    btn.disabled=false;
+    btn.textContent='Create Account →';
+    return;
+  }
+
+  try{
+    const r=await fetch(`${API}/customers/`);
+    if(r.ok){
+      const all=await r.json();
+      const exists=all.find(c=>c.owner_email&&c.owner_email.toLowerCase()===email.toLowerCase());
+      if(exists){err.textContent='Account exists. Use Sign In.';err.style.display='block';btn.disabled=false;btn.textContent='Create Account →';return;}
+    }
+  }catch{}
+
+  // ── Persist credentials (base64 encoded, client-side only) ──
+  const passEncoded = btoa(pass);
+  localStorage.setItem('humana_pass_'+email.toLowerCase(), passEncoded);
+
+  // ── Store pending signup record for later retrieval ──
+  const pending = {
+    email: email,
+    pass: passEncoded,    // base64; replace with real hashed auth before production
+    created_at: new Date().toISOString(),
+    status: 'pending_wizard'
+  };
+  localStorage.setItem('humana_pending_signup', JSON.stringify(pending));
+
+  // ── Pass email to wizard via sessionStorage ──
+  sessionStorage.setItem('humana_signup_email', email);
+
+  btn.textContent='Redirecting…';
+  window.location.href = 'humana-wizard.html';
+}
+function openModal(t){
+  // Reset fields
+  document.getElementById('loginEmail').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('signupEmail').value='';
+  document.getElementById('signupPass').value='';
+  document.getElementById('signupPass2').value='';
+  // Clear errors
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('signupErr').style.display='none';
+  document.getElementById('signupSuc').style.display='none';
+
+  document.getElementById('loginModal').classList.add('open');
+  switchTab(t);
+}
+
+function openSignup(){
+  openModal('signup');
+}
+function googleSignIn(){
+  alert('Google OAuth requires Firebase/Supabase — wiring the email flow for now.');
+}
+function googleSignUp(){googleSignIn();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('loginModal').classList.remove('open');});
+</script>
+</body>
+</html>
