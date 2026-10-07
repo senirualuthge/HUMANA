@@ -1,0 +1,54 @@
+# ── Secrets / env (NEVER commit) ─────────────────────
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+credentials.json
+service-account*.json
+
+# ── Python ───────────────────────────────────────────
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Node ─────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── Build / dist ─────────────────────────────────────
+dist/
+build/
+.next/
+out/
+
+# ── Logs ─────────────────────────────────────────────
+*.log
+logs/
+
+# ── OS / editor ──────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# ── Local data / db ──────────────────────────────────
+*.db
+*.db.bak
+*.sqlite
+*.sqlite3
+chroma_data/
+data/chroma/
